@@ -41,7 +41,14 @@
 %\changefontsizes[16pt]{12pt}
     % For changing the default text size
 
-
+\usepackage{algpseudocode}
+    % For ability to write pseudocode. 
+    % \If{condition} <state> \ElsIf{condition} <state> \Else <state> \EndIf
+        % Note: Only \If and \Endif statements necessary.
+    % \For{condition} <state> \EndFor
+    % \ForAll{condition} <state> \EndFor
+    % \While{condition} <state> \EndWhile
+    % All of this can only be done within an \begin{algorithmic} block.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -195,10 +202,10 @@ At the master node, there is a main IVA (or ICA / group ICA) problem of finding 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-    
+\begin{algorithm}
 While not all sites and master node have converged 
     for all sites k = 1..K
         compute
-
+\end{algorithm}
 
 \end{document}

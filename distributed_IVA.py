@@ -1,10 +1,11 @@
 import numpy as np
+import pandas as pd
 
-def IVA_L (X, alpha0=0.1, termThreshold=1e-6, termCrit="ChangeinW",
+def d_IVA_L (X, alpha0=0.1, termThreshold=1e-6, termCrit="ChangeinW",
            maxIter=1024, initW=[], A=[], verbose=False, whiten=False) :
     '''
     
-    Solves the Independent Vector Analysis with Laplace 
+    Computes the Independent Vector Analysis with Laplace 
     distribution given datasets. 
     
     -------------------------------------------------------------------
@@ -36,16 +37,15 @@ def IVA_L (X, alpha0=0.1, termThreshold=1e-6, termCrit="ChangeinW",
         alpha0 = Initial step size scaling
             (Float, 0.1)
             
-    X = Data observations from K data sets, i.e. X{k}=A{k}*S{k}
-        where A{k} is NxN unknown invertible mixing matrix and
-        S{k} is a NxT matrix with the nth row corresponding to
-        T samples of nth source in the kth dataset. For IVA, 
-        assumed that source is tatistically independent of all 
-        sources within dataset and exactly dependent on at 
-        most one source in each of the other datasets. The
-        data, X, is a 3 dimensional array of dimension NxKxT. 
-        The latter enforces the assumption of equal number of 
-        samples in each dataset
+    X = Data observations from K data sets across L sites. The site 
+        should be the fourth dimension, each individual dataset per
+        site should be in the third dimension. 
+        
+        NOTE: Due to numpy stupitidty, a four dimensional array with 
+        shape=(2,3,4,5) will have two matrices with each matrix having
+        three matrices with four rows and five columns. I know it 
+        doesn't make sense, Don't ask questions, I just program here.
+    
     
     
     Outputs:
@@ -63,27 +63,76 @@ def IVA_L (X, alpha0=0.1, termThreshold=1e-6, termCrit="ChangeinW",
                           'ChangeInW' or 'ChangeInCost' ''')
     
     
-    ## In the MATLAB script, had N,T,K, but python shape 
-    ## ## function returns in (depth, rows, columns) form, not 
-    ## ## rows, columns, deep form. Rotate to compensate
-    K,N,T = X.shape
     
-    W = np.random.rand(K,N,N)
+    ## In the MATLAB script, had N,T,K for rows, columns, depth, 
+    ## but python shape function returns in (depth, rows, column)
+    ## form, not rows, columns, deep form. Rotate to compensate, 
+    ## add extra dimension for sites
+    L,K,N,T = X.shape
     
+    ## Might be more effiecent to just have them be ndarrays, but
+    ## I'll try this first
+    W     = dict()
+    Y     = dict()
+    Y_hat = dict()
+    
+    
+    ## This is the other way it could be done, without using
+    ## dictionaries
+    # W     = np.random.rand(shape=(L,K,N,N))
+    # Y     = X * 0.0
+    # Y_hat = X[:, 1, :, :] * 0.0
+
+    
+    ## For each site, create unmixing matrix in W dataframe, 
+    ## independent source matrix for each site in Y dataframe, 
+    ## and a new subject matrix in Y_hat dataframe
+    for i in range(L) :
+        W    ["Site_%i" % i] = np.random.rand(K,N,N)
+        Y    ["Site_%i" % i] = X[0, :, :, :] * 0.0
+        Y_hat["Site_%i" % i] = X[0, 0, :, :] * 0.0
+        
     
     ## Initializing variables
     cost = np.array([np.NaN for x in range(maxIter)])
-    Y = X * 0.0
     
     ## Main Loop
     for iteration in range(maxIter) :
         termCriterion = 0
         
         ## Initial approximation to true source vectors
-        for i in range(1, K) :
-            Y[i,:,:] = np.dot(W[i,:,:], X[i,:,:])
+        
+        for i in range(L) :
+            for j in range(K) :
+                Y["Site_%i" % i][1, j, :, :] = (
+                W["Site_%i" % i][j, :, :] * X[i, j, :, :] )          
+        
+        ## This is where we are getting initial approximations for the sites.
+        ## Send these to master node, have it compute its own approximations on
+        ## Global level.
         
         
+
+
+
+
+        
+#########################################
+#########################################
+#########################################
+#########################################
+#########################################
+#########################################
+#########################################
+#########################################
+#########################################
+#########################################
+#########################################
+
+
+
+
+
         ## Initializing values for the iteration
         sqrtYtY = np.sqrt(np.sum(abs(Y)*abs(Y),0))
         sqrtYtYinv = 1 / sqrtYtY
@@ -94,6 +143,8 @@ def IVA_L (X, alpha0=0.1, termThreshold=1e-6, termCrit="ChangeinW",
         for i in range(K) :
             phi = sqrtYtYInv * Y[i,:,:]
             dW[i,:,:] = W[i,:,:] - np.dot(phi, np.dot(Y[i,:,:].T), W[i,:,:]) / T
+        
+        
         
         ## Updating W
         W = W + alpha0 * dW
