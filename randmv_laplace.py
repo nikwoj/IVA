@@ -1,13 +1,5 @@
-
-# coding: utf-8
-
-# In[51]:
-
 import numpy as np
 import scipy.linalg as lin
-
-
-# In[49]:
 
 def randmv_laplace (d, T, Lambda=1, mu=[], Gamma=[]) :
     ''' Random Multivariate laplacian distrubution.

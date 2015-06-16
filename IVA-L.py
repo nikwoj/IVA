@@ -1,13 +1,4 @@
-
-# coding: utf-8
-
-# In[3]:
-
 import numpy as np
-# import matplotlib as mpl
-
-
-# In[2]:
 
 def IVA_L (X, alpha0=0.1, termThreshold=1e-6, termCrit="ChangeinW",
            maxIter=1024, initW=[], A=[], verbose=False, whiten=False) :
