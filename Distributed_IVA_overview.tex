@@ -1,0 +1,202 @@
+\documentclass{amsproc}
+
+
+
+%%%%%%%%%%%%    Package Section    %%%%%%%%%%%%
+
+ \usepackage{amssymb}
+     % For the usage of some mathematical symbols
+
+% \usepackage{graphicx}
+     % For the ability to put in pictures into latex files
+
+ \usepackage{amsmath}
+     % For the ability to do other forms of math things
+
+ \usepackage{amstext}
+     % For the ability to type in ams style, I guess?
+     
+% \usepackage{mhequ}
+     % For ability to have multiple columns on single line
+     % Automatically puts into math mode, so could also just use in place of regular equation enviorment
+     % Environment called equation
+     % \begin{equation}[ (number of columns wanted) ]
+     % example
+         % \begin{equation}[3]
+             % x &= y +2  &\qquad y &= 5   &\qquad  z &= 4
+    % \end{equation}
+    
+    %Splits up into 3 columns based on \qquad, centers individual columns with & and centers division of columns with &
+    % Can also use \multicol{ ( Number of columns desired to be smashed together ) } { Text to go into larger combined column }
+
+ \usepackage{esvect}
+      % For ability to use better vector notation
+      % $ \vv{o} ^ t $
+      
+\usepackage{commath}
+    % For ability to use norm and abs functions 
+ 
+%\usepackage{lmodern}
+%\usepackage{scrextend}
+%\changefontsizes[16pt]{12pt}
+    % For changing the default text size
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Misceleanous 
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\title{Algorithm describing current setup for Distributed IVA}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Document Start
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Notation} Here we will describe notation as well as assumptions.
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+There are $K$ total sites
+
+There are $N$ subjects per site
+
+There are $C$ components per subject
+
+$W^i_l$ denotes the unmixing matrix for subject $l$ at site $i$
+
+$X^i_l$ denotes the $l^{th}$ subject at site $i$
+
+$Y^i_l$ denotes the approximation to subject $l$ at site $i$
+
+$\hat{Y}^i$ denotes the site source for site $i$. Explained further in algorithm section
+
+$W^{Gi}$ denotes the master node unmixing matrix for the $i^{th}$ site
+
+$S^i_l$ denotes the master node approximation to the true source of site $i$
+
+
+
+At each site, there is a sub IVA (or ICA / group ICA) problem of finding statistically independent sources for each subject
+
+\[
+    \begin{pmatrix}
+        W^i_1   & 0         & \dots     & 0         \\
+        0       & W^i_2     & \dots     & 0         \\
+        \vdots  & \vdots    & \ddots    & \vdots    \\
+        0       & 0         & \dots     & W^i_N
+    \end{pmatrix}
+    %
+    \begin{pmatrix}
+        X^i_l   \\
+        X^i_2   \\
+        \vdots  \\
+        X^i_N
+    \end{pmatrix}
+    %
+    =
+    %
+    \begin{pmatrix}
+        Y^i_1   \\
+        Y^i_2   \\
+        \vdots  \\
+        Y^i_N
+    \end{pmatrix}
+\]
+
+At the master node, there is a main IVA (or ICA / group ICA) problem of finding statistically independent sources for the site sources $\hat{Y}$
+        
+\[
+    \begin{pmatrix}
+        W^{G1}  & 0         & \dots     & 0         \\
+        0       & W^{G2}    & \dots     & 0         \\
+        \vdots  & \vdots    & \ddots    & \vdots    \\
+        0       & 0         & \dots     & W^{GN}
+    \end{pmatrix}
+    %
+    \begin{pmatrix}
+        \hat{Y}^1   \\
+        \hat{Y}^2   \\
+        \vdots      \\
+        \hat{Y}^N
+    \end{pmatrix}
+    %
+    =
+    %
+    \begin{pmatrix}
+        S^1     \\
+        S^2     \\
+        \vdots  \\
+        S^N
+    \end{pmatrix}
+\]
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Algorithm} We will now describe the current algorithm
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+While not all sites and master node have converged 
+    for all sites k = 1..K
+        compute
+
+
+\end{document}
