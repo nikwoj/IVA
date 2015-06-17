@@ -71,18 +71,25 @@ def d_IVA_L (X, alpha0=0.1, termThreshold=1e-6, termCrit="ChangeinW",
     L,K,N,T = X.shape
     
     ## Might be more effiecent to just have them be ndarrays, but
-    ## I'll try this first
-    W     = dict()
-    Y     = dict()
-    Y_hat = dict()
+    ## I'll try dictionaries first, as they are easier to read
+    # W     = dict()
+    # Y     = dict()
+    # Y_hat = dict()
+    # W_glb = dict()
     
     
     ## This is the other way it could be done, without using
     ## dictionaries
-    # W     = np.random.rand(shape=(L,K,N,N))
-    # Y     = X * 0.0
-    # Y_hat = X[:, 1, :, :] * 0.0
+    W     = np.random.rand(shape=(L,K,N,N))
+    Y     = X * 0.0
+    Y_hat = X[:, 1, :, :] * 0.0
+    W_glb = np.zeros(shape=(L,K,N,N))
 
+    for i in range(L) :
+      for j in range(K) :
+          W_glb[i,j,:,:] = np.identity(N)
+    
+    
     
     ## For each site, create unmixing matrix in W dataframe, 
     ## independent source matrix for each site in Y dataframe, 
@@ -92,24 +99,36 @@ def d_IVA_L (X, alpha0=0.1, termThreshold=1e-6, termCrit="ChangeinW",
         Y    ["Site_%i" % i] = X[0, :, :, :] * 0.0
         Y_hat["Site_%i" % i] = X[0, 0, :, :] * 0.0
         
+        # Now need to set up all of the Global W matrices
+        for j in range(K) :
+            W_glb[i, j, :, :] = np.identity(N)
     
-    ## Initializing variables
-    cost = np.array([np.NaN for x in range(maxIter)])
+    ## Vector that has costs of every computation
+    cost    = np.array([np.NaN for x in range(maxIter)])
+    
     
     ## Main Loop
     for iteration in range(maxIter) :
         termCriterion = 0
+
+        ## Vector that says which components to take from where. 
+        ## In perfect world, would have 1 for each site, but for
+        ## now this will do. Modulo K because there are at K
+        ## datasets. The index determines the component, the value
+        ## at the component determines which dataset to take the 
+        ## result from.
+        permute = np.random.permutation(N) % K 
         
         ## Initial approximation to true source vectors
-        
         for i in range(L) :
             for j in range(K) :
-                Y["Site_%i" % i][1, j, :, :] = (
-                W["Site_%i" % i][j, :, :] * X[i, j, :, :] )          
+                Y[i,j,:,:] = np.dot(W[i,j,:,:], X[i,j,:,:])
+                
         
-        ## This is where we are getting initial approximations for the sites.
-        ## Send these to master node, have it compute its own approximations on
-        ## Global level.
+        
+        ## This is where we are getting initial approximations
+        ## for the sites. Send these to master node, have it
+        ## compute its own approximations on Global level.
         
         
 
