@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 
 def d_IVA_L (X, alpha0=0.1, termThreshold=1e-6, termCrit="ChangeinW",
            maxIter=1024, initW=[], A=[], verbose=False, whiten=False) :
@@ -70,6 +69,7 @@ def d_IVA_L (X, alpha0=0.1, termThreshold=1e-6, termCrit="ChangeinW",
     ## add extra dimension for sites
     L,K,N,T = X.shape
     
+    
     ## Might be more effiecent to just have them be ndarrays, but
     ## I'll try dictionaries first, as they are easier to read
     # W     = dict()
@@ -94,17 +94,17 @@ def d_IVA_L (X, alpha0=0.1, termThreshold=1e-6, termCrit="ChangeinW",
     ## For each site, create unmixing matrix in W dataframe, 
     ## independent source matrix for each site in Y dataframe, 
     ## and a new subject matrix in Y_hat dataframe
-    for i in range(L) :
-        W    ["Site_%i" % i] = np.random.rand(K,N,N)
-        Y    ["Site_%i" % i] = X[0, :, :, :] * 0.0
-        Y_hat["Site_%i" % i] = X[0, 0, :, :] * 0.0
+    # for i in range(L) :
+    #     W    ["Site_%i" % i] = np.random.rand(K,N,N)
+    #     Y    ["Site_%i" % i] = X[0, :, :, :] * 0.0
+    #     Y_hat["Site_%i" % i] = X[0, 0, :, :] * 0.0
         
-        # Now need to set up all of the Global W matrices
-        for j in range(K) :
-            W_glb[i, j, :, :] = np.identity(N)
+        ## Now need to set up all of the Global W matrices
+        # for j in range(K) :
+        #     W_glb[i, j, :, :] = np.identity(N)
     
     ## Vector that has costs of every computation
-    cost    = np.array([np.NaN for x in range(maxIter)])
+    cost = np.array([np.NaN for x in range(maxIter)])
     
     
     ## Main Loop
@@ -117,7 +117,7 @@ def d_IVA_L (X, alpha0=0.1, termThreshold=1e-6, termCrit="ChangeinW",
         ## datasets. The index determines the component, the value
         ## at the component determines which dataset to take the 
         ## result from.
-        permute = np.random.permutation(N) % K 
+        permute = np.array([np.random.permutation(N) % K for x in range(K)])
         
         ## Initial approximation to true source vectors
         for i in range(L) :
