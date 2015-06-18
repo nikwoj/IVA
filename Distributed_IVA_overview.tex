@@ -134,10 +134,10 @@ At each site, $k=1 \dots K$ there is a sub IVA (or ICA / group ICA) problem of f
 
 \begin{align} \label{site_specific}
     \begin{pmatrix}
-        W^{G1}  & 0         & \dots     & 0         \\
-        0       & W^{G2}    & \dots     & 0         \\
+        W^{Gk}  & 0         & \dots     & 0         \\
+        0       & W^{Gk}    & \dots     & 0         \\
         \vdots  & \vdots    & \ddots    & \vdots    \\
-        0       & 0         & \dots     & W^{GK}
+        0       & 0         & \dots     & W^{Gk}
     \end{pmatrix}
     %
     \begin{pmatrix}
@@ -171,14 +171,14 @@ At the master node, there is a main IVA (or ICA / group ICA) problem of finding 
         W^{G1}  & 0         & \dots     & 0         \\
         0       & W^{G2}    & \dots     & 0         \\
         \vdots  & \vdots    & \ddots    & \vdots    \\
-        0       & 0         & \dots     & W^{GN}
+        0       & 0         & \dots     & W^{GK}
     \end{pmatrix}
     %
     \begin{pmatrix}
         \hat{Y}^1   \\
         \hat{Y}^2   \\
         \vdots      \\
-        \hat{Y}^N
+        \hat{Y}^K
     \end{pmatrix}
     %
     =
@@ -187,7 +187,7 @@ At the master node, there is a main IVA (or ICA / group ICA) problem of finding 
         S^1     \\
         S^2     \\
         \vdots  \\
-        S^N
+        S^K
     \end{pmatrix}
 \end{align}
 
