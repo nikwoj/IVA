@@ -3,7 +3,7 @@
 import numpy as np
 from scipy.special import gamma
 
-def laplacian_likelihood (X, Sigma) :
+def laplacian_likelihood (X, Sigma=[]) :
     '''
     Returns likelihood funciton, given vector X and dispersion
         matrix Sigma.
@@ -14,32 +14,20 @@ def laplacian_likelihood (X, Sigma) :
     
     '''
     
-    D, N = X.shape
     
-    constant = 2 ** (-d) / ( np.pi ** ((d-1) / 2.0) * np.linalg.det(Sigma) ** (1/2.0) * gamma((d+1)/2.0))
+    D = X.shape[0]
     
-    ## N column vectors, return value for each one
-    lap_like = np.zeros(shape=(N,1))
+    if Sigma==[] :
+        Sigma = np.identity(D)
     
-    ######
-    ######
-    ######
-    ######
-    ######
-    ######
+    constant = 2 ** (-d) / (( np.pi ** ((d-1) / 2.0) ) * (np.linalg.det(Sigma) ** (1/2.0)) * gamma((d+1)/2.0))
     
+
     ## Calculates exponential of every element in array
-    exponential = np.exp()
-    
-    ######
-    ######
-    ######
-    ######
-    ######
-    ######
-    
+    exponential = np.exp(np.sqrt(np.sum(X * np.dot(Sigma, X), axis=0)))
+
     ## Find laplacian likelihood for every element in array
-    for x in exponenetial :
-        lap_like.append( constant * x )
+    for x in range(len(exponential)) :
+        exponential[x] = exponential[x] * constant
         
-    return lap_like
+    return exponential
