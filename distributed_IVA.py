@@ -122,7 +122,7 @@ def d_IVA_L (X, alpha0=0.1, termThreshold=1e-6, termCrit="ChangeinW",
         ## Initial approximation to true source vectors
         for i in range(L) :
             for j in range(K) :
-                Y[i,j,:,:] = np.dot(W[i,j,:,:], X[i,j,:,:])
+                Y[i,j,:,:] = np.dot(W_glb[i,j,:,:], np.dot(W[i,j,:,:], X[i,j,:,:]))
                 
         
         
