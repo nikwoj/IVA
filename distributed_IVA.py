@@ -49,7 +49,7 @@ def d_IVA_L (X, alpha0=0.1, termThreshold=1e-6, termCrit="ChangeinW",
     
     Outputs:
     -------------------------------------------------------------------
-    W = Unmixing matrix. 
+    W = Unmixing matrices. 
     
     cost = vector that contains costs associated to each 
         iteration
@@ -69,151 +69,108 @@ def d_IVA_L (X, alpha0=0.1, termThreshold=1e-6, termCrit="ChangeinW",
     ## add extra dimension for sites
     L,K,N,T = X.shape
     
-    
-    ## Might be more effiecent to just have them be ndarrays, but
-    ## I'll try dictionaries first, as they are easier to read
-    # W     = dict()
-    # Y     = dict()
-    # Y_hat = dict()
-    # W_glb = dict()
-    
-    
-    ## This is the other way it could be done, without using
-    ## dictionaries
+
+    ## Inititializing variables. W is site specific unmixing matrices.
+    ## Y is site specific approximation to independent sources
+    ## Y_hat is site specific approximations sent to global node
+    ## W_glb is global unmixing matrix
+    ## dW is matrix that will be multiplied with W to produce new 
+    ## ## approximation to W, iteratively
+    ## S is independent sources for global IVA
     W     = np.random.rand(shape=(L,K,N,N))
     Y     = X * 0.0
     Y_hat = X[:, 1, :, :] * 0.0
-    W_glb = np.zeros(shape=(L,K,N,N))
-
+    W_glb = np.zeros(shape=(L,N,N))
+    dW    = np.zeros(shape=(K,N,N))
+    S     = np.zeros(shape=(L,N,T))
+    
+    
     for i in range(L) :
       for j in range(K) :
           W_glb[i,j,:,:] = np.identity(N)
+
     
-    
-    
-    ## For each site, create unmixing matrix in W dataframe, 
-    ## independent source matrix for each site in Y dataframe, 
-    ## and a new subject matrix in Y_hat dataframe
-    # for i in range(L) :
-    #     W    ["Site_%i" % i] = np.random.rand(K,N,N)
-    #     Y    ["Site_%i" % i] = X[0, :, :, :] * 0.0
-    #     Y_hat["Site_%i" % i] = X[0, 0, :, :] * 0.0
         
-        ## Now need to set up all of the Global W matrices
-        # for j in range(K) :
-        #     W_glb[i, j, :, :] = np.identity(N)
-    
     ## Vector that has costs of every computation
     cost = np.array([np.NaN for x in range(maxIter)])
+    
+    
+    ## Permute array that tells which components to take from which 
+    ## subjects. Refreshed every iteration, and for every site
+    ##
+    ## Shape refers to number of sites and number of components
+    permute = np.zeros(shape=(L,1,N))
     
     
     ## Main Loop
     for iteration in range(maxIter) :
         termCriterion = 0
 
-        ## Vector that says which components to take from where. 
-        ## In perfect world, would have 1 for each site, but for
-        ## now this will do. Modulo K because there are at K
-        ## datasets. The index determines the component, the value
-        ## at the component determines which dataset to take the 
-        ## result from.
-        permute = np.array([np.random.permutation(N) % K for x in range(K)])
+        ## Load the permute array for the current iteration
+        for l in range(L) :
+            permute[l,:,:] = np.array([np.random.permutation(N) % K])
         
         ## Initial approximation to true source vectors
-        for i in range(L) :
-            for j in range(K) :
-                Y[i,j,:,:] = np.dot(W_glb[i,j,:,:], np.dot(W[i,j,:,:], X[i,j,:,:]))
+        for l in range(L) :
+            for k in range(K) :
+                Y[l,k,:,:] = np.dot(W_glb[l,k,:,:], np.dot(W[l,k,:,:], X[l,k,:,:]))
                 
+            
+            ## Basically, says that for site l we want the nth component from 
+            ## permute[n] subject to be sent to global.
+            for n in range(N) :
+                Y_hat[l,n,:] = Y[l,permute[n],n,:]
+            
+            
+            ## In future implementation, may base updated W on what happens after
+            ## computing site specific IVA. In that case, delete this part
+            sqrtYtY    = np.sqrt(np.sum(Y[l,:,:,:]*Y[l,:,:,:],0))
+            sqrtYtYinv = 1 / sqrtYtY
+            
+            ## W_old is computed for cost computations. If don't care about that,
+            ## then can just delete it.
+            W_old = W.copy()
+            
+            ## Computing change in W
+            for k in range(K) :
+                phi = sqrtYtYInv * Y[l,k,:,:]
+                dW[l,k,:,:] = W[l,k,:,:] - np.dot(phi, np.dot(Y[l,k,:,:].T), W[l,k,:,:]) / T
+            
+            ## Updating W
+            W[l,:,:,:] = W[l,:,:,:] + alpha0 * dW[l,:,:,:]
         
         
         ## This is where we are getting initial approximations
         ## for the sites. Send these to master node, have it
         ## compute its own approximations on Global level.
         
-        
-
-
-
-
-        
-#########################################
-#########################################
-#########################################
-#########################################
-#########################################
-#########################################
-#########################################
-#########################################
-#########################################
-#########################################
-#########################################
-
-
-
-
-
-        ## Initializing values for the iteration
-        sqrtYtY = np.sqrt(np.sum(abs(Y)*abs(Y),0))
-        sqrtYtYinv = 1 / sqrtYtY
-        W_old = W.copy()
-        dW    = W*0
-        
-        ## Computing change in W
-        for i in range(K) :
-            phi = sqrtYtYInv * Y[i,:,:]
-            dW[i,:,:] = W[i,:,:] - np.dot(phi, np.dot(Y[i,:,:].T), W[i,:,:]) / T
-        
-        
-        
-        ## Updating W
-        W = W + alpha0 * dW
-        
-        ## Computing costs
-        cost[iteration] = 0
-        for i in range(k) :
-            cost[iteration] += np.log(abs(det(W[i,:,:])))
-        
-        cost[iteration] = np.sum(np.sum(sqrtYtY))/T - cost[iteration]
-        cost[iteration] = cost[iteration] / (N*K)
-        
-        ## Check termination Criterion
-        if termCrit == 'ChangeInW' :
-            for i in range(k) :
-                termCriterion = max(termCriterion, max(1-np.abs(np.diag(np.dot(W_old[i,:,:], W[i,:,:].T)))))
-                
-        elif termCrit == 'ChangeInCost' :
-            if iteration == 1 :
-                termCriterion = 1
-                
-            else :
-                termCriterion = (abs(cost(iteration-1)-cost(iteration))
-                                 / abs(cost(iteration)))
-        
-        
-        ## Check termination condition
-        if termCriterion < termThreshold or iteration == maxIter :
-            break
-        elif np.isnan(cost(iteration)) :
-            if verbose :
-                print ("W blew up, restarting with new initial value")
+        for l in range(L) :
+            S[l,:,:] = W_glb[l,:,:] * Y_hat[l,:,:]
             
-            for i in range(K) :
-                W[i,:,:] = np.identity(N) + 0.1 * rand(N)
+        sqrtStS    = np.sqrt(np.sum(S * S, axis=0))
+        sqrtStSinv = 1 / sqrtStS
+        
+        W_glb_old = W_glb.copy()
+        dW_glb    = W_glb * 0
+        
+        for l in range(L) :
+            phi_glb = sqrtStSInv * S[l,:,:]
+            dW_glb[l,:,:] = W_glb[l,:,:] - np.dot(phi, np.dot(Y[l,:,:].T), W_glb[l,:,:]) / T
             
-        elif iteration > 1 and cost(iteration) > cost(iteration-1) :
-            alpha0 = max(alphaMin, alphaScale * alpha0)
-            
+        W_glb = W_glb + alpha0 * dW_glb
         
-        ## Display iteration information
-        if verbose :
-            print "Step: %i \t W change: %f \t Cost %f" % (iteration, termCriterion, cost(iteration))
-        
-        ## End iteration
-    
-    ## Finish display
-    if verbose :
-        print "Algorithim converged, end results are: "
-        print "Step: %i \n W change: %f \n Cost %f \n\n" % (iteration, termCriterion, cost(iteration))
-        
-    return W, cost
+        ## Do I worry about a cost analysis? Seems VERY intensive to write....
+        ## Not worrying about it for now.
+        #####
+        #####
+        ##### NOTE: There is currently no cost analysis happening, so if code has huge cost computation, will go unnoticed.
+        #####
+        #####
+
+
+
+
+
+
+    return W
 

@@ -87,6 +87,9 @@ def IVA_L (X, alpha0=0.1, termThreshold=1e-6, termCrit="ChangeinW",
         ## Initializing values for the iteration
         ## Summing over datasets, left with N x T
         ## dataset.
+        #######
+        ####### Post look through note: Why are we taking abs when we are just doing element-wise multiplication?
+        #######
         sqrtYtY = np.sqrt(np.sum(abs(Y)*abs(Y),0))
         sqrtYtYinv = 1 / sqrtYtY
         W_old = W.copy()
