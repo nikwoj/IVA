@@ -1,3 +1,4 @@
+import randmv_laplace as mvl
 import numpy as np
 
 def IVA_L (X, alpha0=0.1, termThreshold=1e-6, termCrit="ChangeinW",
@@ -151,4 +152,74 @@ def IVA_L (X, alpha0=0.1, termThreshold=1e-6, termCrit="ChangeinW",
         print "Step: %i \n W change: %f \n Cost %f \n\n" % (iteration, termCriterion, cost(iteration))
         
     return W, cost
+
+
+
+
+def test_IVA_L ( ) :
+    '''
+    Takes no inputs, prints sourec vectors, unmxing matrix, what the 
+        true unmixing matrix should look like, and what the unmixing 
+        matrix that IVA_L returned looks like
+    '''
+    
+    
+    print "Running test_IVA_L function"
+    
+    N=3
+    K=10
+    T=1e4
+    
+    S=np.zeros(shape=(K,N,T))
+    
+    for n in range(N) :
+        Z=mvl.randmv_laplace(K,T)
+        S[:,:,n] = np.transpose(Z)
+    
+    
+    A = np.random.rand(shape=(K,N,N))
+    X = S.copy()
+    
+    for k in range(K) :
+        A[k,:,:] = np.transpose(vecnorm(A[k,:,:]))
+        X[k,:,:] = A[k,:,:] * S[k,:,:]
+    
+    print "The source vectors S are ", S
+    print "The mixing matrix A is ", A
+    print "The true unmixing matrix W is ", np.pinv(A) 
+    
+    
+    W = IVA_L (X)
+
+    print "IVA_L found that the unmixing matrix W is ", W
+
+
+def vecnorm(A) :
+    ''' 
+    Takes a matrix of vectors and produces a matrix with the same span,
+        but with every vector normalized.
+        
+    Inputs:
+    ------------------------------------------------------------------------------
+    A = matrix of vectors. A must be a D x N matrix, cannot be multidimensional.
+    
+    Outputs:
+    ------------------------------------------------------------------------------
+    A = D x N matrix of vectors. note that every column vector in A has the same 
+        span as every corresponding column vector in B.
+        
+    '''
+    
+    N = A.shape[1]
+    
+    
+    for n in range(N) :
+        A[:,n] = A[:,n] / np.sqrt(np.sum(A[:,n] * A[:,n], axis=0))
+    
+    return A
+    
+    
+    
+if __name__ == "__main__" :
+    print test_IVA_L ()
 
