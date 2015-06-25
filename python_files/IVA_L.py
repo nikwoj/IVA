@@ -1,12 +1,15 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[7]:
 
 import scipy.io as sio
 import randmv_laplace as mvl
 import numpy as np
+from sklearn.preprocessing import normalize
 a = sio.loadmat("variables.mat")
+
+def vecnorm(A) : return  normalize(A, axis=0, norm='l2')
 
 
 # In[2]:
@@ -172,33 +175,6 @@ def IVA_L (X, alpha0=0.1, termThreshold=1e-6, termCrit='ChangeInCost',
         print " Step: %i \n W change: %f \n Cost %f \n\n" % (iteration, termCriterion, cost[iteration])
         
     return W
-
-
-# In[3]:
-
-def vecnorm(A) :
-    ''' 
-    Takes a matrix of vectors and produces a matrix with the same span,
-        but with every vector normalized.
-        
-    Inputs:
-    ------------------------------------------------------------------------------
-    A = matrix of vectors. A must be a D x N matrix, cannot be multidimensional.
-    
-    Outputs:
-    ------------------------------------------------------------------------------
-    A = D x N matrix of vectors. note that every column vector in A has the same 
-        span as every corresponding column vector in B.
-        
-    '''
-    
-    N = A.shape[1]
-    
-    
-    for n in range(N) :
-        A[:,n] = A[:,n] / np.sqrt(np.sum(A[:,n] * A[:,n], axis=0))
-    
-    return A
 
 
 # In[4]:
