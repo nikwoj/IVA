@@ -2,12 +2,9 @@
 import numpy as np
 from sklearn.preprocessing import normalize
 
-## for testing purposes
-import matplotlib.pylab as plt
+## for testing purposes, data was generated in MATLAB
+## Will create (or rather, fix...) generating function at later date
 import scipy.io as sio
-
-## My own function
-import randmv_laplace as mvl
 
 
 def _get_dW (W, Y, sqrtYtYInv) :
@@ -262,7 +259,10 @@ class IVA_L( ) :
             (rows, columns, depth) form.
         '''
         
-        self.W, self.iteration, self.cost = iva_l(X, self.alpha0, self.term_threshold)
+        self.W, self.iteration, self.cost = iva_l(
+            X, self.alpha0, self.term_threshold, self.term_crit, 
+            self.max_iter, self.W_init, self.verbose
+        )
     
     
     def transform(self, X) :
@@ -288,7 +288,7 @@ class IVA_L( ) :
             return Y
         
         except AttributeError :
-            raise NameError  ("W not defined. Run fit method before attempting to transform data.")
+            self.fit_error("W")
     
     
     def fit_transform(self, X) :
@@ -313,7 +313,7 @@ class IVA_L( ) :
             Y[:,:,k] = np.dot(self.W[:,:,k], X[:,:,k])
         return Y
         
-    def unmixing_(self) :
+    def unmixing(self) :
         '''
         Returns the current unmixing matrix W. 
         
@@ -330,10 +330,10 @@ class IVA_L( ) :
         try :
             return self.W
         except AttributeError :
-            raise ValueError ("W not defined. Run fit method before attempting to transform data.")
+            self.fit_error("W")
             
             
-    def mixing_(self) :
+    def mixing(self) :
         '''
         Returns the pseudo inverse of the unmixing matrix W.
         
@@ -355,4 +355,26 @@ class IVA_L( ) :
             return A
             
         except AttributeError :
-            raise ValueError ("W not defined. Run fit method before attempting to transform data.")
+            self.fit_error("W")
+            
+    def cost(self) :
+        '''
+        Returns the cost associated to the fitting process
+        '''
+        
+    def iteration(self) :
+        '''
+        Returns the number of iterations it took to converge to solution.
+        '''
+        
+        try :
+            return self.iterations
+        except AttributeError :
+            self.fit_error("iterations")
+            
+    def fit_error(self, reason) :
+        '''
+        Returns the error message associated to their problem.
+        '''
+        
+        raise ValueError ("%s not defined. Run fit method before attempting to transform data" % reason)
