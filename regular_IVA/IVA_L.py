@@ -77,6 +77,9 @@ def iva_l (X, alpha0=0.1, term_threshold=1e-6, term_crit='ChangeInCost',
     
     Inputs:
     -------
+    X : 3-D data matrix. Note that HAS to be 3-D, even if only have one 
+        subject.
+    
     alpha0 : Float, optional
         Learning rate. Defaults to 0.1
     
@@ -107,7 +110,11 @@ def iva_l (X, alpha0=0.1, term_threshold=1e-6, term_crit='ChangeInCost',
         The unmixing matrix W
     '''
     
-    N,T,K = X.shape
+    try :
+        N,T,K = X.shape
+    except ValueError :
+        raise ValueError ('''X needs to be 3-D, or in (N,T,K) form. 
+                             current matrix is %s''' % str(X.shape))
     
     ## Initializing variables
     cost = [np.NaN for x in range(max_iter)]
@@ -125,7 +132,7 @@ def iva_l (X, alpha0=0.1, term_threshold=1e-6, term_crit='ChangeInCost',
         else :
             raise ValueError ('''W has to have dimension %i x %i for
                     each of the %i sites, in form (rows, columns. subjects)
-                    \n W defaulting to random.''' % (N, N, N))
+                    \n W defaulting to random.''' % (N, N, K))
     
     if (term_crit != 'ChangeInW') and (term_crit != 'ChangeInCost') :
         raise ValueError ('''term_crit has to be either 
@@ -187,13 +194,19 @@ def iva_l (X, alpha0=0.1, term_threshold=1e-6, term_crit='ChangeInCost',
             print "Step: %i \t W change: %f \t Cost %f" % (iteration, term_criterion, cost[iteration])
             
             ## End iteration
-        
-        ## Finish display
-        if verbose :
-            print "Algorithim converged, end results are: "
-            print " Step: %i \n W change: %f \n Cost %f \n\n" % (iteration, term_criterion, cost[iteration])
+    
+    if iteration==max_iter :
+        print ('''Algorithm may have not converged, reached max
+               number of iterations ''')
+    
+    ## Finish display
+    if verbose :
+        print "Algorithim converged, end results are: "
+        print " Step: %i \n W change: %f \n Cost %f \n\n" % (iteration, term_criterion, cost[iteration])
     
     return W, iteration, cost
+
+
     
 class IVA_L( ) :
     '''
@@ -226,17 +239,27 @@ class IVA_L( ) :
     verbose : Bool, optional
         Print iteration information to output? Defaults to False
     
-    Mehtods:
+    Methods:
     --------
+    fit : 
+    
+    transform :
+    
+    fit_transform :
+    
+    unmixing :
+    
+    mixing :
+    
+    iteration :
     
     Attributes:
     -----------
-    unmixing_: Returns the unmixing matrix for the data. 
+    unmixing : Returns the unmixing matrix for the data. 
     
-    mixing_: Returns the mixing matrix for the transformed data, ie inverse of 
-        unmixing matrix
+    mixing : Returns the mixing matrix for the transformed data, ie inverse of unmixing matrix
         
-    n_iter_: Number of iterations taken to converge. 
+    iteration : Number of iterations taken to converge. 
     '''
     
     def __init__(self, alpha0=0.1, term_threshold=1e-6, term_crit='ChangeInCost',
@@ -306,7 +329,7 @@ class IVA_L( ) :
             Data matrix of true sources. 
         '''
         
-        self.fit(self, X)
+        self.fit(X)
         K = X.shape[2]
         Y = X.copy()
         for k in range(K) :
