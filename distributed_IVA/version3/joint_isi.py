@@ -40,7 +40,7 @@ def joint_ISI (W,A) :
     new_W = _produce_W(W)
     new_A = _produce_A(A)
     
-    product = np.dot(new_W, new_A)
+    product = np.abs(np.dot(new_W, new_A))
     
     N = product.shape[0]
     
@@ -48,8 +48,8 @@ def joint_ISI (W,A) :
     col_sum = 0
     
     for n in range(N) :
-        row_max = np.max(abs(product[n,:]))
-        col_max = np.max(abs(product[:,n]))
+        row_max = np.max(product[n,:])
+        col_max = np.max(product[:,n])
         
         row_sum += np.sum(product[n,:] / row_max) - 1
         col_sum += np.sum(product[:,n] / col_max) - 1
