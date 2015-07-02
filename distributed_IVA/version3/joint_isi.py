@@ -6,7 +6,7 @@ def _produce_W (W) :
         that all components are grouped together.
     '''
     N,N,K,P = W.shape
-    new_W   = np.zeros(shape=(N*K, N))
+    new_W   = np.zeros(shape=(N*(K+P), N))
     
     
     for n in range(N) :
@@ -22,7 +22,7 @@ def _produce_A(A) :
         all components are grouped together.
     '''
     N,N,K,P = A.shape
-    new_A   = np.zeros(shape=(N, N*K))
+    new_A   = np.zeros(shape=(N, N*(K+P)))
     
     for n in range(N) :
         for p in range(P) :
