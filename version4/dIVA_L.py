@@ -1,6 +1,7 @@
 ## Just general need modules
 import numpy as np
-from sklearn.preprocessing import normalize
+# from sklearn.preprocessing import normalize
+import sys
 
 ## for testing purposes, data was generated in MATLAB
 ## Will create (or rather, fix...) generating function at later date
@@ -121,8 +122,11 @@ def diva_l (X, alpha0=0.1, term_threshold=1e-6, term_crit='ChangeInCost',
     
     Outputs:
     --------
-    W : array, shape = (N,N,K)
-        The unmixing matrix W
+    W : list of arrays, shape = (N,N)
+        The unmixing matrix W for each subject, ordered in order
+        that subjects were recieved in
+    
+    iteration : 
     '''
     
 
@@ -158,7 +162,7 @@ def diva_l (X, alpha0=0.1, term_threshold=1e-6, term_crit='ChangeInCost',
         
         ## Happens at Master Node
         sqrtYtY    = np.sqrt(np.sum(YtY, 2))
-        sqrtYtYInv = 1 / sqrtYtY
+        sqrtYtYInv = 1 / (sqrtYtY + sys.float_info.epsilon)
         
         W_old = [[np.random.rand(Z.shape[0], Z.shape[0]) for Z in X[p]] for p in range(P)]
         ## Creating W_old, but have to do it step by step
@@ -177,8 +181,8 @@ def diva_l (X, alpha0=0.1, term_threshold=1e-6, term_crit='ChangeInCost',
         ## Check termination Criterion
         if term_crit == 'ChangeInW' :
             for p in range(P) :
-                for k in range(K) :
-                    tmp_W = W_old[:,:,k,p] - W[:,:,k,p]
+                for k in range(len(X[p])) :
+                    tmp_W = W_old[p][k][:,:] - W[p][k][:,:]
                     term_criterion = max(term_criterion, np.linalg.norm(tmp_W[:,:], ord=2))
         
         elif term_crit == 'ChangeInCost' :
@@ -196,8 +200,10 @@ def diva_l (X, alpha0=0.1, term_threshold=1e-6, term_crit='ChangeInCost',
         elif np.isinf(cost[iteration]) :
             if verbose :
                 print "W blew up, restarting with new initial value"
-            for k in range(K) :
-                W[:,:,k] = np.identity(N) + 0.1 * np.random.rand(N)
+            for p in range(P) :
+                for k in range(len(X[p])) :
+                    W[:,:,k] = np.identity(N) + 0.1 * np.random.rand(N)
+        
         elif iteration > 1 and cost[iteration] > cost[iteration-1] :
             alpha0 = max([alpha_min, alpha_scale * alpha0])
         

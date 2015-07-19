@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.optimize as opt
 
+from stack import *
 
 
 class Master_Node () :
@@ -66,7 +67,7 @@ class Master_Node () :
         '''
 
         self.tot_sites = tot_sites
-        subjects       = []
+        self.subjects  = []
         shape          = (0, 0)
         W_init         = []
         self.sqrtYtY   = 0
@@ -78,27 +79,36 @@ class Master_Node () :
                 verbose=self.verbose, optimize=self.optimize
             )
             
-            subjects.append(len(self.tot_sites[site].W_init))
+            self.subjects.append(len(self.tot_sites[site].W_init))
             shape = self.tot_sites[site].W_init[0].shape
             
             for W in W_i_site :
                 W_init.append(W)
-            
         
         self.shape = shape
-        self.grad  = grad = [np.zeros(shape=(self.shape[0], self.shape[0])) 
-                                            for p in range(len(subjects)) 
-                                            for x in range(subjects[p]) 
-                                            ]
+        self.grad  = [np.zeros(shape=(self.shape[0], self.shape[0])) 
+                                        for p in range(len(self.subjects)) 
+                                        for x in range(self.subjects[p]) 
+                                        ]
         
-        W = optimize(self._cost_function, W_init, self._grad_function, self.optimize, self.verbose)['x']
+        W = []
+        for w in W_init :
+            W.extend(stack(w).tolist())
         
+        W = _optimize(self._cost_function, W, self._grad_function, self.optimize, self.verbose)['x']
+        
+        c  = 0
         cc = 0
         for site in self.tot_sites :
             ## Gonna need to find out how to properly do this data transmission
-            for i in range(subjects[cc]) : 
-                self.tot_sites[site].fit(W)
-            cc += 1
+            for K in range(self.subjects[c]) :
+                W_site = []
+                W_site.append(W[cc+k])
+            
+            self.tot_sites[site].fit(W_site)
+            
+            cc += self.subjects[c]
+            c  += 1
     
     
     def _cost_function (self, W, cost_func) :
@@ -149,26 +159,33 @@ class Master_Node () :
         if self.verbose :
             print "Running gradient function"
         
+        W_stack = []
+        c = 0
         # YtY = 0
         # for site in self.tot_sites :
         #     YtY += site.fit(W, cost_val=True)
-        
+        c  = 0 
         cc = 0
         for site in self.tot_sites :
-            grad_site = self.tot_sites[site].fit(W, self.sqrtYtY, grad_val=True)
+            W_site = []
+            
+            for k in range(self.subjects[c]) :
+                W_site.extend(stack(np.array([W[i] for i in range(
+            
+            grad_site = self.tot_sites[site].fit(W_site, self.sqrtYtY, grad_val=True)
             
             for k in range(grad_site) :
                 ## Gonna need to find out how to properly do this data transmission
                 grad[cc+k][:,:] = grad_site[k][:,:]
-                
-            cc += len(grad_site)
+            
+            cc += self.subjects[c]
         
         print grad
         
         return grad
     
     
-def optimize (cost, init_guess, grad, optimize, verbose=False) :
+def _optimize (cost, W, grad, optimize, verbose=False) :
     '''
     
     '''
@@ -177,7 +194,17 @@ def optimize (cost, init_guess, grad, optimize, verbose=False) :
         print "Running optimization function"
     
     if optimize == "bfgs" :
-        W = opt.fmin_bfgs(f=cost, x0=init_guess, fprime=grad)
+        W = opt.fmin_bfgs(f=cost, x0=W, fprime=grad)
     
     return W
-    
+
+
+def _stack (W) : 
+    ## Takes matrix and outputs vector
+    return W.reshape(W.shape[0]**2)
+
+
+def _unstack(W) :
+    ## Takes vector and outputs matrix stacked according to stack
+    N = sqrt(W.shape[0])
+    return W.reshape(N,N)

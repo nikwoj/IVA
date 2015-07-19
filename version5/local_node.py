@@ -50,9 +50,11 @@ class local_node () :
         '''
         
         K = len(W)
-                
+        print W[0].shape
+        Y = [self.X[0].copy() for k in range(len(self.X))]
+        
         for k in range(K) :
-            Y = np.dot(W[k][:,:], self.X[k][:,:])
+            Y[k][:,:] = np.dot(W[k][:,:], self.X[k][:,:])
         
         if func_val :
             YtY = np.sum(Y*Y, 2)
