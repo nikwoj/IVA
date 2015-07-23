@@ -42,7 +42,7 @@ def iva_l ( X, W_init=[], verbose=False) :
 
     print cost_and_grad(W)
     
-    W = minimize(fun=cost_and_grad, x0=W, args=(X), method="BFGS", jac=gradient, options={'disp':verbose})
+    W = minimize(fun=cost_and_grad, x0=W, method="BFGS", jac=gradient, options={'disp':verbose})
     W = vec_to_mat(W['x'], N, K)
     
     return W

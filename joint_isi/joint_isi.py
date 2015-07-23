@@ -19,10 +19,12 @@ def joint_ISI (W,A) :
     ## If W is just a single site, then
     try :
         N,N,K = W.shape
-        B = np.zeros((N,N))
+        B = np.zeros((N,N,K))
         
         for k in range(K) :
-            B[:,:] += np.abs(np.dot(W[:,:,k], A[:,:,k]))
+            B[:,:,k] = np.abs(np.dot(W[:,:,k], A[:,:,k]))
+        
+        W = np.sum(B, 2)
         
         row_sum = 0
         col_sum = 0
