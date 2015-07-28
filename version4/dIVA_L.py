@@ -202,7 +202,7 @@ def diva_l (X, alpha0=0.1, term_threshold=1e-6, term_crit='ChangeInCost',
                 print "W blew up, restarting with new initial value"
             for p in range(P) :
                 for k in range(len(X[p])) :
-                    W[:,:,k] = np.identity(N) + 0.1 * np.random.rand(N)
+                    W[:,:,k] = np.identity(N) + 0.1 * np.random.rand(N,N)
         
         elif iteration > 1 and cost[iteration] > cost[iteration-1] :
             alpha0 = max([alpha_min, alpha_scale * alpha0])

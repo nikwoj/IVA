@@ -67,6 +67,7 @@ class Master_Node () :
         '''
 
         self.tot_sites = tot_sites
+        self.length    = len(tot_sites)
         self.subjects  = []
         shape          = (0, 0)
         W_init         = []
@@ -161,16 +162,13 @@ class Master_Node () :
         
         W_stack = []
         c = 0
-        # YtY = 0
-        # for site in self.tot_sites :
-        #     YtY += site.fit(W, cost_val=True)
-        c  = 0 
         cc = 0
         for site in self.tot_sites :
             W_site = []
             
             for k in range(self.subjects[c]) :
-                W_site.extend(stack(np.array([W[i] for i in range(
+                print W.shape
+                W_site.extend(stack(np.array([W[i] for i in range(self.length)])))
             
             grad_site = self.tot_sites[site].fit(W_site, self.sqrtYtY, grad_val=True)
             
@@ -179,8 +177,6 @@ class Master_Node () :
                 grad[cc+k][:,:] = grad_site[k][:,:]
             
             cc += self.subjects[c]
-        
-        print grad
         
         return grad
     

@@ -1,22 +1,24 @@
-import autograd.numpy as np
+import numpy as np
 import stack as st
 
 
 
-def mat_to_vec (W, K) :
+def mat_to_vec (W) :
     '''
     Takes in matrix that needs to be vectorized and does that
     
     Inputs:
     -------
-    W : 1-D array
-        Vector to be converted into a matrix
+    W : 3-D array
+        Matrix to be converted into a vector
     
     K : Integer
         Number of subjects, ie number of W matrices there are
     '''
     tmp_W = []
+    K = W.shape[2]
     for k in range(K) :
+        ## Vectorize the gradient
         tmp_W.extend(st.stack(W[:,:,k]).tolist())
     
     return np.array(tmp_W)
@@ -50,8 +52,8 @@ def vec_to_mat (W, N, K) :
 
 def vec_to_mat_l (W, N, K) :
     '''
-    Takes in a vector that needs to be converted to a list of
-        2-D matrices and does that.
+    Takes in a vector that needs to be converted to a matrix and 
+        does that.
     
     Inputs:
     -------
