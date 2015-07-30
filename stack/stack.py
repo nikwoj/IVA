@@ -1,5 +1,7 @@
-import numpy as np
-
+try :
+    import autograd.numpy as np
+except :
+    import numpy as np
 
 def stack (W) : 
     ## Takes matrix and outputs vector

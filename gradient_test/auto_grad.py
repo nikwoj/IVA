@@ -1,12 +1,15 @@
 import autograd.numpy as np
+
 from autograd.numpy.linalg import inv, det
 
-def set_para (X, W_init) :
+
+
+def set_para (X, W_init=[]) :
     N,R,K = X.shape
     Y = X.copy()
     
     if W_init == [] :
-        W = rand(N,N,K)
+        W = np.random.rand(N,N,K)
     else :
         W = W_init
     
@@ -32,4 +35,4 @@ def set_para (X, W_init) :
         return cost
     
     return compute_cost, W
-    
+
