@@ -4,7 +4,7 @@ from numpy import dot
 
 from scipy.optimize import fmin_l_bfgs_b
 
-from vec_mat import vec_mat, mat_vec
+from vec_mat import vec_to_mat, mat_to_vec
 
 def dIVA_L(X, W_init=[], verbose=False) :
     cost_and_grad = set_para(X, verbose)
@@ -16,10 +16,10 @@ def dIVA_L(X, W_init=[], verbose=False) :
     
     if W_init == [] :
         W_init = [rand() for p in range(P)]
-    W,d,i = fmin_l_bfgs_b
+    W,d,i = fmin_l_bfgs_b(cost_and_grad, x0=W_init)
     if verbose :
         print "Optimization finished"
-    W = vec_mat(W,N,KK[p-2])
+    W = vec_to_mat(W,N,KK[p-2])
     W_m = []
     for p in range(P) :
         W_m.append(W[:,:,KK[p-1]:KK[p]])
@@ -37,7 +37,7 @@ def set_para (X, verbose) :
     Y = []
 
     def cost_and_grad(W) :
-        W = vec_mat(W,N,KK[-2])
+        W = vec_to_mat(W,N,KK[-2])
         for p in range(P) :
             W_m.append(W[:,:,KK[p-1]:KK[p])
             for k in range(K[p]) :

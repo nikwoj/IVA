@@ -3,25 +3,15 @@ try :
 except :
     import numpy as np
 
-
-
-
-
-
 def stack (W) : 
     ## Takes matrix and outputs vector
     return W.reshape(W.shape[0]**2)
-
-
-
 
 def unstack(W) :
     ## Takes vector and outputs matrix stacked according to stack
     W = np.array(W)
     N = np.sqrt(W.shape)
     return W.reshape(N,N)
-
-
 
 def mat_to_vec (W) :
     '''
@@ -35,14 +25,21 @@ def mat_to_vec (W) :
     K : Integer
         Number of subjects, ie number of W matrices there are
     '''
-    tmp_W = []
-    K = W.shape[2]
-    for k in range(K) :
-        tmp_W.extend(stack(W[:,:,k]).tolist())
+    try :
+        tmp_W = []
+        K = W.shape[2]
+        for k in range(K) :
+            tmp_W.extend(stack(W[:,:,k]).tolist())
     
-    return np.array(tmp_W)
-    
-
+        return np.array(tmp_W)
+    except :
+        P = len(W)
+        K = [w.shape[2] for w in W]
+        tmp_W = []
+        for p in range(P) :
+            for k in K :
+                tmp_W.extend(stack(W[p][:,:,k]).tolist())
+       return tmp_W
 
 def vec_to_mat (W, N, K) :
     '''
@@ -66,8 +63,6 @@ def vec_to_mat (W, N, K) :
         new_W[:,:,k] = unstack(np.array(W_subj))
     
     return new_W
-
-
 
 def vec_to_mat_l (W, N, K) :
     '''
