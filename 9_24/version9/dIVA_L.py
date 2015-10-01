@@ -35,7 +35,6 @@ def set_para (X, verbose) :
     KK.append(0)
     
     def cost_and_grad(W) :
-        print "Running"
         W = vec_to_mat(W,N,KK[-2])
         W_m = []
         disper = []
