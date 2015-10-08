@@ -21,7 +21,7 @@ def test3(X, A, verbose=False, W=[]) :
         X_m = [X[:,:,k[p]:k[p+1]] for p in range(len(k)-1)]
         W_m = [W[:,:,k[p]:k[p+1]] for p in range(len(k)-1)]
         A_m = [A[:,:,k[p]:k[p+1]] for p in range(len(k)-1)]
-        W_final = dIVA_L(X_m, W_m, verbose)
+        W_final,_,_ = dIVA_L(X_m, W_m, verbose)
         
         values.append((iteration, joint_ISI(W_m, A_m)))
     

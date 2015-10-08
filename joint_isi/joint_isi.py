@@ -60,16 +60,17 @@ def joint_ISI (W,A) :
         tot_sum = (row_sum + col_sum) / (2 * N * (N-1))
         return tot_sum
     
-    ## If instead W is a list of lists of 2-D arrays, then
     except AttributeError :
         P = len(W)
-        
-        N, N = W[0][0][:,:].shape
+        assert len(W) == len(A)
+        K = [W[p].shape[2] for p in range(P)]
+        N, N, _ = W[0][:,:,:].shape
         B = np.zeros(shape=(N,N))
         
+        
         for p in range(P) :
-            for k in range(len(W[p])) :
-                B += np.abs(np.dot(W[p][k][:,:], A[p][k][:,:]))
+            for k in range(K[p]) :
+                B += np.abs(np.dot(W[p][:,:,k], A[p][:,:,k]))
         
         row_sum = 0
         col_sum = 0
@@ -83,6 +84,3 @@ def joint_ISI (W,A) :
         
         tot_sum = (row_sum + col_sum) / (2 * N * (N-1))
         return tot_sum
-
-
-

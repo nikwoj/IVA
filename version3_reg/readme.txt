@@ -1,1 +1,0 @@
-Using scipy optimize module
