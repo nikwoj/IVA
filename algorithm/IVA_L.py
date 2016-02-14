@@ -21,8 +21,6 @@ def set_functions ( X, W_init=[], verbose=False ) :
     sqrt_YtY = np.zeros((N,R))
     
     def cost_and_grad ( W ) :
-        if verbose:
-            print "Running cost and gradient function"
         
         W_master = vec_to_mat(W,N,K)
         for k in range(K) :
