@@ -19,10 +19,10 @@ def adjusted_IVA_L(X, KK, W_init=[], verbose=False) :
     ####################################
     ####################################
     # Zeroing factor simulates distributed dispersion matrix
-    zeroing_factor = np.ones((K,K))
-    for i in range(len(KK) - 2) :
-        zeroing_factor[KK[i-1] : KK[i],   KK[i]   : KK[i+1]] = 0
-        zeroing_factor[KK[i]   : KK[i+1], KK[i-1] : KK[i]]   = 0
+    #zeroing_factor = np.ones((K,K))
+    #for i in range(len(KK) - 2) :
+    #    zeroing_factor[KK[i-1] : KK[i],   KK[i]   : KK[i+1]] = 0
+    #    zeroing_factor[KK[i]   : KK[i+1], KK[i-1] : KK[i]]   = 0
     ####################################
     ####################################
     
@@ -33,7 +33,8 @@ def adjusted_IVA_L(X, KK, W_init=[], verbose=False) :
             Y[:,:,k] = np.dot(W_master[:,:,k], X[:,:,k])
         
         for n in range(N) :
-            disper[:,:,n] = np.dot(Y[n,:,:].T, Y[n,:,:]) * zeroing_factor
+            for i in range(len(KK) -2) :
+                disper[KK[i-1]:KK[i], KK[i-1]:KK[i], n] = np.dot(Y[n,:,KK[i-1]:KK[i]].T, Y[n,:,KK[i-1]:KK[i]])
             A[:,:,n]      = np.dot(pinv(disper[:,:,n]), Y[n,:,:].T)
             sqrt_YtY[n,:] = np.sqrt( np.sum( Y[n,:,:].T * A[:,:,n], 0 ) )
         
