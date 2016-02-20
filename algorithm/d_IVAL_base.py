@@ -5,6 +5,20 @@ from numpy.linalg import det
 
 ##############
 
+##  NOTES ##
+# N = Number of components
+# T = Number of samples
+# P = Number of sites
+# KK[p] = Number of subjects at site P
+# Any function starting with 
+#   L_ is a function to be used by a local node
+#   M_ is a fucntion to be used by the master node
+
+# X is a list of sites, with each entry containing a 3-D array of subjects 
+#   of shape (N,T,KK[p])
+
+##############
+
 def L_get_para(X, max_iter) :
     P = len(X)
     KK = [X[p].shape[2] for p in range(P)]
@@ -13,7 +27,7 @@ def L_get_para(X, max_iter) :
     return P, KK, N, T, cost
 
 
-def set_para_YtY(N, T, KK, P) :
+def L_set_para_YtY(N, T, KK, P) :
     Y = [zeros((N,T,KK[p])) for p in range(P)]
     
     def L_YtY(X, W) : 
@@ -28,7 +42,7 @@ def set_para_YtY(N, T, KK, P) :
     return L_YtY
 
 
-def set_para_dW(N, T, KK, P) :
+def L_set_para_dW(N, T, KK, P) :
     dW = [zeros((N,N,KK[p])) for p in range(P)]
     
     def L_dW(W, Y, sqrtYtYInv) :
@@ -43,7 +57,7 @@ def set_para_dW(N, T, KK, P) :
 
 
 
-def set_para_cost(N, T, KK, P) :
+def M_set_para_cost(N, T, KK, P) :
     
     def M_cost(W, sqrtYtY) :
         cost = np.sum(sqrtYtY) / T
@@ -72,9 +86,9 @@ def M_terminate(cost, it, term_thresh, verbose) :
 def iva_l(X, alpha0=1, term_thresh=1e-6, term_crit="cost", max_iter=1024, W=[], verbose=False) :
     
     P, KK, N, T, cost = L_get_para(X, max_iter)
-    L_dW   = set_para_dW(N, T, KK, P)
-    L_YtY  = set_para_YtY(N, T, KK, P)
-    M_cost = set_para_cost(N, T, KK, P)
+    L_dW   = L_set_para_dW(N, T, KK, P)
+    L_YtY  = L_set_para_YtY(N, T, KK, P)
+    M_cost = M_set_para_cost(N, T, KK, P)
     alpha_min   = 0.1
     alpha_scale = 0.9
     
