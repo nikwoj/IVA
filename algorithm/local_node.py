@@ -45,16 +45,13 @@ class local_node() :
     def node_step(self, sqrtYtYInv, al0) :
         _, _, K = self.X.shape
         dW = gradient(self.Y, self.W, sqrtYtYInv)
-        # print "dW \n ", dW[:,:,0]
         self.W += al0 * gradient(self.Y, self.W, sqrtYtYInv)
-        # print al0
-        # print self.W[:,:,0], "\n\n"
         self.Y, YtY = compute_Y(self.X, self.W)
         w_value = sum([log(abs(det(self.W[:,:,k]))) for k in range(K)])
         return YtY, w_value
     
     def initiate(self, n_components, W=[]) :
-        # self.X, wht, de_wht = whiten(self.X, n_components)
+        self.X, wht, de_wht = whiten(self.X, n_components)
         N, T, K = self.X.shape
         if W == [] :
             self.W = rand(N,N,K)
@@ -62,8 +59,7 @@ class local_node() :
             self.W = W
         
         self.Y, YtY = compute_Y(self.X, self.W)
-        # return YtY, K, wht, de_wht
-        return YtY, K
+        return YtY, K, wht, de_wht
     
     def finish(self) :
         return self.W

@@ -33,9 +33,7 @@ class master_node() :
         Take in current values for YtY, log(abs(det(W))) and output
             cost, whether or not to terminate
         '''
-        # print sum(YtY, 0)
         sqrtYtY = sqrt(YtY)
-        # print sqrtYtY
         sqrtYtYInv = 1 / sqrtYtY
         N, T = sqrtYtY.shape
         
