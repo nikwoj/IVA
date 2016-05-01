@@ -42,10 +42,18 @@ class local_node() :
     def __init__(self, X) :
         self.X = X
     
-    def node_step(self, sqrtYtYInv, al0) :
+    # def node_step(self, sqrtYtYInv, al0, backtrack) :
+    def node_step(self, sqrtYtYInv, backtrack) :
         _, _, K = self.X.shape
-        dW = gradient(self.Y, self.W, sqrtYtYInv)
-        self.W += al0 * gradient(self.Y, self.W, sqrtYtYInv)
+        
+        if backtrack :
+            self.W  -= self.dW
+            self.dW *= 1/2.0
+            self.W  += self.dW
+        else :
+            self.dW = gradient(self.Y, self.W, sqrtYtYInv)
+        
+        # self.W += al0 * gradient(self.Y, self.W, sqrtYtYInv)
         self.Y, YtY = compute_Y(self.X, self.W)
         w_value = sum([log(abs(det(self.W[:,:,k]))) for k in range(K)])
         return YtY, w_value
