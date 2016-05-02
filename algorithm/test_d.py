@@ -26,7 +26,6 @@ def save_isi(number, write) :
     fil.close()
 
 def algorithm(num_subj) :
-    print "a"
     X, A = get_data(num_subj)
     X, A = mk_AX_data(X, A, num_subj/2)
     ncomp = 20
@@ -34,9 +33,10 @@ def algorithm(num_subj) :
     W, Wht, de_wht = ddiva(X, W, ncomp)
     K = num_subj/2
     isi = joint_disi(W,A,Wht)
-    save_isi(num_subj/2, (k,isi))
     print (K, isi)
-    return K, isi
+    save_isi(num_subj/2, str((K,isi)))
+    print (K, isi)
+    return str((K, isi))
 
 def get_data(up) :
     X = zeros((250, 32968,up))
@@ -55,9 +55,9 @@ if __name__=="__main__" :
     if argv[1] == "liebnitz" :
         PNUM = 20
     elif argv[1] == "hooke" :
-        PNUM = 5
+        PNUM = 6
     elif argv[1] == "mars" :
-        PNUM = 32
+        PNUM = 10
     ncomp = 20
     pool = Pool(PNUM)
     
@@ -72,8 +72,11 @@ if __name__=="__main__" :
         #pool.close
         #pool.map(algorithm, B)  #[k for k in range(it-PNUM, it, 2)])
         #pool.join()
+    #B = [k for k in range(4,8,2)]
     B = [k for k in range(4, 130, 2) if k not in [4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,56,60]]
     isi = pool.map(algorithm, B)
     fil = open("test_ieee_all.txt", "w+")
-    fil.write(isi)
+    for k in range(len(isi)) :
+        fil.write(str(isi[k]))
+        fil.write("\n")
     fil.close()
