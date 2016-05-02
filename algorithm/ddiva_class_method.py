@@ -25,7 +25,7 @@ def ddiva(X, W, n_components=20, max_iter=2048, term_thresh=1e-5, verbose=False)
     
     YtY = sum(YtY, 0)
     sqrtYtYInv = master.initiate(YtY, KK)
-    
+    backtrack = False
     for it in range(max_iter) :
         w_value = 0
         YtY *= 0
