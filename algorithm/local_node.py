@@ -42,22 +42,19 @@ class local_node() :
     def __init__(self, X) :
         self.X = X
     
-<<<<<<< HEAD
-    def node_step(self, sqrtYtYInv, al0) :
-        N, R, K = self.X.shape
-        dW = gradient(self.Y, self.W, sqrtYtYInv)
-        self.W += al0 * gradient(self.Y, self.W, sqrtYtYInv)
-        #print np.isnan(self.Y).any(), np.isnan(self.W).any()
-        if np.isnan(self.W).any() or np.isnan(dW).any() :
-            self.W = np.zeros((N,N,K))
-            for k in range(K) :
-                self.W[:,:,k] = np.identity(N)
+    #def node_step(self, sqrtYtYInv, al0) :
+    #    N, R, K = self.X.shape
+    #    dW = gradient(self.Y, self.W, sqrtYtYInv)
+    #    self.W += al0 * gradient(self.Y, self.W, sqrtYtYInv)
+    #    #print np.isnan(self.Y).any(), np.isnan(self.W).any()
+    #    if np.isnan(self.W).any() or np.isnan(dW).any() :
+    #        self.W = np.zeros((N,N,K))
+    #        for k in range(K) :
+    #            self.W[:,:,k] = np.identity(N)
         
-=======
     # def node_step(self, sqrtYtYInv, al0, backtrack) :
     def node_step(self, sqrtYtYInv, backtrack) :
-        _, _, K = self.X.shape
-        
+        N, R, K = self.X.shape
         if backtrack :
             self.W  -= self.dW
             self.dW *= 1/2.0
@@ -65,8 +62,6 @@ class local_node() :
         else :
             self.dW = gradient(self.Y, self.W, sqrtYtYInv)
         
-        # self.W += al0 * gradient(self.Y, self.W, sqrtYtYInv)
->>>>>>> a84140394993ddc5a93301fb5d5554ee0c937625
         self.Y, YtY = compute_Y(self.X, self.W)
         w_value = sum([log(abs(det(self.W[:,:,k]))) for k in range(K)])
         return YtY, w_value
