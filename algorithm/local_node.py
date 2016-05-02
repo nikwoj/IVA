@@ -43,9 +43,15 @@ class local_node() :
         self.X = X
     
     def node_step(self, sqrtYtYInv, al0) :
-        _, _, K = self.X.shape
+        N, R, K = self.X.shape
         dW = gradient(self.Y, self.W, sqrtYtYInv)
         self.W += al0 * gradient(self.Y, self.W, sqrtYtYInv)
+        #print np.isnan(self.Y).any(), np.isnan(self.W).any()
+        if np.isnan(self.W).any() or np.isnan(dW).any() :
+            self.W = np.zeros((N,N,K))
+            for k in range(K) :
+                self.W[:,:,k] = np.identity(N)
+        
         self.Y, YtY = compute_Y(self.X, self.W)
         w_value = sum([log(abs(det(self.W[:,:,k]))) for k in range(K)])
         return YtY, w_value
