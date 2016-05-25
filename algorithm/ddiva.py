@@ -39,16 +39,9 @@ def ddiva(X, W, n_components=20, max_iter=2048, term_thresh=1e-5, verbose=False)
 
         # if it > 1 :
         #     if cost[it] > cost[it-1] : al0 = min(almin, al0*0.9)
-        #if it > 1 :
-        #    if cost[it] > cost[it-1] : backtrack = True
-        #    else : backtrack = False
         if it > 1 :
-            if cost[it] > base : backtrack = True
-            else : 
-                base = cost[it]
-                backtrack = False
-        else : base = cost[it]
-        
+            if cost[it] > cost[it-1] : backtrack = True
+            else : backtrack = False
         if term < term_thresh :
             break
     # nan = (cost[0:it] == NaN).any()
