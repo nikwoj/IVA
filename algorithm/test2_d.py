@@ -3,7 +3,8 @@ from multiprocessing import Pool
 from numpy import dot, zeros, ceil
 from scipy.io import loadmat
 from local_node import local_node
-from ddiva_class_method import ddiva
+from ddiva import ddiva
+from joint_isi import joint_disi
 
 from sys import argv
 
@@ -25,7 +26,7 @@ def algorithm(num_subj) :
     W, Wht, de_wht = ddiva(X, ncomp)
     K = num_subj/2
     save_score(K, joint_isi(W,A,wht))
-    return K, joint_isi(W,A,wht)
+    return K, joint_disi(W,A,wht)
 
 def save_score(K, score) :
     fil = open("output_" + start + "_test2D.txt", "w+")

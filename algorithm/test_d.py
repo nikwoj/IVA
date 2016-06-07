@@ -4,8 +4,8 @@ from numpy import dot, zeros, ceil, abs
 from numpy.random import rand
 from scipy.io import loadmat
 from local_node import local_node
-from ddiva_class_method import ddiva
-from joint_isi3 import joint_disi
+from ddiva import ddiva
+from joint_isi import joint_disi
 
 from sys import argv
 from time import sleep
@@ -33,10 +33,9 @@ def algorithm(num_subj) :
     W, Wht, de_wht = ddiva(X, W, ncomp)
     K = num_subj/2
     isi = joint_disi(W,A,Wht)
-    print (K, isi)
     save_isi(num_subj/2, str((K,isi)))
     print (K, isi)
-    return str((K, isi))
+    return K, isi
 
 def get_data(up) :
     X = zeros((250, 32968,up))
@@ -55,9 +54,9 @@ if __name__=="__main__" :
     if argv[1] == "liebnitz" :
         PNUM = 20
     elif argv[1] == "hooke" :
-        PNUM = 6
+        PNUM = 5
     elif argv[1] == "mars" :
-        PNUM = 10
+        PNUM = 32
     ncomp = 20
     pool = Pool(PNUM)
     
@@ -72,11 +71,8 @@ if __name__=="__main__" :
         #pool.close
         #pool.map(algorithm, B)  #[k for k in range(it-PNUM, it, 2)])
         #pool.join()
-    #B = [k for k in range(4,8,2)]
     B = [k for k in range(4, 130, 2) if k not in [4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,56,60]]
     isi = pool.map(algorithm, B)
     fil = open("test_ieee_all.txt", "w+")
-    for k in range(len(isi)) :
-        fil.write(str(isi[k]))
-        fil.write("\n")
+    fil.write(isi)
     fil.close()

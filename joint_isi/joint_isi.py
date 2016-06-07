@@ -1,86 +1,45 @@
 import numpy as np
+from numpy import dot, abs, max, sum, zeros, identity
 
-
-def joint_ISI (W,A) :
-    '''
-    Takes in unmixing and mixing matrix and computes the
-        joint ISI, or measure of independence (I believe)
+def joint_disi(W, A, Wht) :
+    P = len(W)
+    N = W[0].shape[0]
+    KK = [W[p].shape[2] for p in range(P)]
+    B = zeros((N,N))
+    for p in range(P) :
+        for k in range(KK[p]) :
+            B += abs(dot(W[p][:,:,k], dot(Wht[p][:,:,k], A[p][:,:,k])))
     
-    Inputs:
-    -------
-    W : 3-D or 4-D array or list of lists of 2-D arrays
-        The unmixing matrices, can be contained in a 3-D
-        array as in the case of normal IVA, a 4-D array
-        as in the case of version3 distributed IVA, or
-        a list of lists of 2-D arrays as in the case of 
-        version4 distributed IVA
-    '''
+    row_sum = 0
+    col_sum = 0
     
-    ## If W is just a single site, then
-    try :
-        N,N,K = W.shape
-        B = np.zeros((N,N))
+    for n in range(N) :
+        row_max = max(B[n,:])
+        col_max = max(B[:,n])
         
+        row_sum += sum(B[n,:] / row_max) - 1
+        col_sum += sum(B[:,n] / col_max) - 1
+    tot_sum = (row_sum + col_sum) / (2 * N * (N-1))
+    return tot_sum
+
+def joint_isi(W, A, Wht=[]) :
+    N, N, K = W.shape
+    if Wht == [] :
+        Wht = zeros((N,N,K))
         for k in range(K) :
-            B[:,:] += np.abs(np.dot(W[:,:,k], A[:,:,k]))
-        
-        row_sum = 0
-        col_sum = 0
-        
-        for n in range(N) :
-            row_max = np.max(B[n,:])
-            col_max = np.max(B[:,n])
-            
-            row_sum += np.sum(B[n,:] / row_max) - 1
-            col_sum += np.sum(B[:,n] / col_max) - 1
-        
-        tot_sum = (row_sum + col_sum) / (2 * N * (N-1))
-        return tot_sum
+            Wht[:,:,k] = identity(N)
+    B = zeros((N,N))
+    for k in range(K) :
+        B += abs(dot(W[:,:,k], dot(Wht[:,:,k], A[:,:,k])))
 
-    ## If instead W is multiple sites, then
-    except ValueError :
-        N,N,K,P = W.shape
+    row_sum = 0
+    col_sum = 0
 
-        for k in range(K) :
-            for p in range(P) :
-                W[:,:,k,p] = np.abs(np.dot(W[:,:,k,p], A[:,:,k,p]))
-        
-        W = np.sum(np.sum(W,3),2)
-        
-        row_sum = 0
-        col_sum = 0
-        
-        for n in range(N) :
-            row_max = np.max(W[n,:])
-            col_max = np.max(W[:,n])
-            
-            row_sum += np.sum(W[n,:] / row_max) - 1
-            col_sum += np.sum(W[:,n] / col_max) - 1
-        
-        tot_sum = (row_sum + col_sum) / (2 * N * (N-1))
-        return tot_sum
-    
-    except AttributeError :
-        P = len(W)
-        assert len(W) == len(A)
-        K = [W[p].shape[2] for p in range(P)]
-        N, N, _ = W[0][:,:,:].shape
-        B = np.zeros(shape=(N,N))
-        
-        
-        for p in range(P) :
-            for k in range(K[p]) :
-                B += np.abs(np.dot(W[p][:,:,k], A[p][:,:,k]))
-        
-        row_sum = 0
-        col_sum = 0
-        
-        for n in range(N) :
-            row_max = np.max(B[n,:])
-            col_max = np.max(B[:,n])
-            
-            row_sum += np.sum(B[n,:] / row_max) - 1
-            col_sum += np.sum(B[:,n] / col_max) - 1
-        
-        tot_sum = (row_sum + col_sum) / (2 * N * (N-1))
-        return tot_sum
+    for n in range(N) :
+        row_max = max(B[n,:])
+        col_max = max(B[:,n])
+
+        row_sum += sum(B[n,:] / row_max) - 1
+        col_sum += sum(B[:,n] / col_max) - 1
+    tot_sum = (row_sum + col_sum) / (2 * N * (N-1))
+    return tot_sum

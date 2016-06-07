@@ -8,7 +8,7 @@ from numpy import dot, zeros
 from numpy.random import rand
 from IVA_L import iva_l
 # from adjusted_IVA_L import a_IVA_L
-from joint_isi import joint_ISI
+from joint_isi import joint_isi
 from scipy.io import loadmat
 
 import sys
