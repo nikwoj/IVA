@@ -67,7 +67,7 @@ def _compute_cost (W, sqrtYtY) :
 
 
 
-def iva_l_4 (X, alpha0=0.1, term_threshold=1e-6, term_crit='ChangeInCost',
+def iva_l_4 (X, W_init, term_threshold=1e-6, term_crit='ChangeInCost',
            max_iter=2048, W_init=[], A = [], verbose=False, n_components=0) :
     '''
     IVA_L is the Independent Vector Analysis using multivariate Laplacian 
@@ -124,8 +124,6 @@ def iva_l_4 (X, alpha0=0.1, term_threshold=1e-6, term_crit='ChangeInCost',
         X = X_white
     Y = X.copy()
     N,T,K = X.shape
-    alpha_min   = 0.1
-    alpha_scale = 0.9
     
     return
     if W_init == [] :
@@ -149,6 +147,7 @@ def iva_l_4 (X, alpha0=0.1, term_threshold=1e-6, term_crit='ChangeInCost',
     
     
     backtrack = False
+    back_num  = 10
     ## Main Loop
     for iteration in range(max_iter) :
         term_criterion = 0
@@ -166,12 +165,13 @@ def iva_l_4 (X, alpha0=0.1, term_threshold=1e-6, term_crit='ChangeInCost',
         W_old = W.copy()
         
         if backtrack == False :
-            dW = _get_dW(W, Y, sqrtYtYInv)
-            W = W + alpha0 * dW
+            dW = (1/back_num) * _get_dW(W, Y, sqrtYtYInv)
+            W += dW
         else :
-            W  -= alpha0 * dW
+            W  -= dW
             dW *= 1.0/2.0
-            W  += alpha0 * dW
+            W  += dW
+            back_num += 1
         
         cost[iteration] = _compute_cost(W, sqrtYtY)
         
@@ -186,6 +186,7 @@ def iva_l_4 (X, alpha0=0.1, term_threshold=1e-6, term_crit='ChangeInCost',
                     base = cost[it]
         else :
             base = cost[it]
+        
         ## Check termination Criterion
         if term_crit == 'ChangeInW' :
             for k in range(K) :
@@ -232,7 +233,7 @@ def iva_l_4 (X, alpha0=0.1, term_threshold=1e-6, term_crit='ChangeInCost',
         print "Algorithim converged, end results are: "
         print " Step: %i \n W change: %f \n Cost %f \n\n" % (iteration, term_criterion, cost[iteration])
     if n_components > 0 :
-        return W, wht, [de_wht, cost
+        return W, wht, [de_wht, cost]
     else :
         return W
 
