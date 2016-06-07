@@ -38,37 +38,34 @@ def ddiva(X, W, n_components=20, max_iter=2048, term_thresh=1e-5, verbose=False)
             w_value += local_info[1]
         
         sqrtYtYInv, cost, term = master.master_step(YtY, w_value, cost, it, verbose)
-
-<<<<<<< HEAD
+        
         #if it > 1 :
         #    if cost[it] > cost[it-1] : al0 = min(almin, al0*0.9)
-        if it > 10 :
-            if cost[it] > cost[it-1] : 
-                backtrack = True
-                print "backtrack"
-            else : backtrack = False
-        if term < term_thresh and it > 10 :
-=======
-        # if it > 1 :
-        #     if cost[it] > cost[it-1] : al0 = min(almin, al0*0.9)
-        #if it > 1 :
-        #    if cost[it] > cost[it-1] : backtrack = True
-        #    else : backtrack = False
         if it > 1 :
-            if cost[it] > base : backtrack = True
-            else : 
-                base = cost[it]
-                backtrack = False
-        else : base = cost[it]
+            if backtrack == True :
+                if cost[it] > base :
+                    continue
+                else :
+                    backtrack = False
+            elif backtrack == False :
+                if cost[it] > base :
+                    backtrack = True
+                elif cost[it] <= base :
+                    base = cost[it]
+        else :
+            base = cost[it]
+        
+            #if cost[it] > cost[it-1] : 
+            #    backtrack = True
+            #    print "backtrack"
+            #else : backtrack = False
         
         if term < term_thresh :
->>>>>>> e595d81b30d3711882e345bf35b6ae910e55161a
             break
     # nan = (cost[0:it] == NaN).any()
     W = []
     for site in X :
         W.append(site.finish())
     
-    return W, Wht, de_wht
-    # return W
+    return W, Wht, [de_wht, cost]
     

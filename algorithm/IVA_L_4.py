@@ -1,12 +1,10 @@
 ## Just general need modules
 import numpy as np
-from sklearn.preprocessing import normalize
-
+from numpy import dot, zeros
+from ica import pca_whiten
 ## for testing purposes, data was generated in MATLAB
 ## Will create (or rather, fix...) generating function at later date
-import scipy.io as sio
 
-from joint_isi import joint_ISI
 
 def _get_dW (W, Y, sqrtYtYInv) :
     '''
@@ -55,7 +53,6 @@ def _compute_cost (W, sqrtYtY) :
     current_cost: A number associated to the cost of the current iteration.
     '''
     
-    ## Is dummy assignment faster than just single assignemtn?
     N, N, K = W.shape
     T = sqrtYtY.shape[1]
     current_cost = 0
@@ -71,7 +68,7 @@ def _compute_cost (W, sqrtYtY) :
 
 
 def iva_l_4 (X, alpha0=0.1, term_threshold=1e-6, term_crit='ChangeInCost',
-           max_iter=1024, W_init=[], A = [], verbose=False) :
+           max_iter=2048, W_init=[], A = [], verbose=False, n_components=0) :
     '''
     IVA_L is the Independent Vector Analysis using multivariate Laplacian 
         distribution
@@ -118,12 +115,19 @@ def iva_l_4 (X, alpha0=0.1, term_threshold=1e-6, term_crit='ChangeInCost',
                              current matrix is %s''' % str(X.shape))
     
     cost = [np.NaN for x in range(max_iter)]
-    
-    ## Possible optimazition area: X.copy() or X * 0 or np.zeros(shape=(N,T,K))
+    if n_components > 0 :
+        wht = zeros((n_components, N, K))
+        de_wht = zeros((N, n_components, K))
+        X_white = zeros((n_components, T, K))
+        for k in range(K) :
+            X_white[:,:,k], wht[:,:,k], de_wht[:,:,k] = pca_whiten(X[:,:,k], n_components, verbose=verbose)
+        X = X_white
     Y = X.copy()
+    N,T,K = X.shape
     alpha_min   = 0.1
     alpha_scale = 0.9
     
+    return
     if W_init == [] :
         W = np.random.rand(N,N,K)
     else :
@@ -143,6 +147,8 @@ def iva_l_4 (X, alpha0=0.1, term_threshold=1e-6, term_crit='ChangeInCost',
     else : 
         supplyA = False
     
+    
+    backtrack = False
     ## Main Loop
     for iteration in range(max_iter) :
         term_criterion = 0
@@ -157,13 +163,29 @@ def iva_l_4 (X, alpha0=0.1, term_threshold=1e-6, term_crit='ChangeInCost',
         sqrtYtY    = np.sqrt(np.sum(Y*Y,2))
         
         sqrtYtYInv = 1 / sqrtYtY
-        W_old      = W.copy()
+        W_old = W.copy()
         
-        dW = _get_dW(W, Y, sqrtYtYInv)
-        W = W + alpha0 *  dW
+        if backtrack == False :
+            dW = _get_dW(W, Y, sqrtYtYInv)
+            W = W + alpha0 * dW
+        else :
+            W  -= alpha0 * dW
+            dW *= 1.0/2.0
+            W  += alpha0 * dW
         
         cost[iteration] = _compute_cost(W, sqrtYtY)
         
+        if it > 1 :
+            if backtrack == True :
+                if cost[it] < base :
+                    backtrack = False
+            else :
+                if cost[it] > base :
+                    backtrack = True
+                else :
+                    base = cost[it]
+        else :
+            base = cost[it]
         ## Check termination Criterion
         if term_crit == 'ChangeInW' :
             for k in range(K) :
@@ -209,8 +231,10 @@ def iva_l_4 (X, alpha0=0.1, term_threshold=1e-6, term_crit='ChangeInCost',
     if verbose :
         print "Algorithim converged, end results are: "
         print " Step: %i \n W change: %f \n Cost %f \n\n" % (iteration, term_criterion, cost[iteration])
-    
-    return W, iteration, cost
+    if n_components > 0 :
+        return W, wht, [de_wht, cost
+    else :
+        return W
 
 
     

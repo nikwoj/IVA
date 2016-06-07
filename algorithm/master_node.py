@@ -36,7 +36,7 @@ class master_node() :
         sqrtYtY = sqrt(YtY)
         sqrtYtYInv = 1 / sqrtYtY
         N, T = sqrtYtY.shape
-        
+       
         cost[it] = master_cost(w_value, sqrtYtY, self.KK)
         term = terminate(cost, it, verbose)
         return sqrtYtYInv, cost, term
