@@ -67,7 +67,7 @@ def _compute_cost (W, sqrtYtY) :
 
 
 
-def iva_l_4 (X, W_init, term_threshold=1e-6, term_crit='ChangeInCost',
+def iva_l (X, W_init, term_threshold=1e-6, term_crit='ChangeInCost',
            max_iter=2048, A = [], verbose=False, n_components=0) :
     '''
     IVA_L is the Independent Vector Analysis using multivariate Laplacian 
