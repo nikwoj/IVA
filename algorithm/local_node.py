@@ -43,43 +43,33 @@ class local_node() :
         self.X = X
         self.num_back = 10.0
     
-    #def node_step(self, sqrtYtYInv, al0) :
-    #    N, R, K = self.X.shape
-    #    dW = gradient(self.Y, self.W, sqrtYtYInv)
-    #    self.W += al0 * gradient(self.Y, self.W, sqrtYtYInv)
-    #    if np.isnan(self.W).any() or np.isnan(dW).any() :
-    #        self.W = np.zeros((N,N,K))
-    #        for k in range(K) :
-    #            self.W[:,:,k] = np.identity(N)
-    #    
-    #    self.Y, YtY = compute_Y(self.X, self.W)
-    #    w_value = sum([log(abs(det(self.W[:,:,k]))) for k in range(K)])
-    #    return YtY, w_value
-                                                                              
-    def node_step(self, sqrtYtYInv, backtrack) :
-        N, R, K = self.X.shape
-        if backtrack :
-            self.num_back += 1
-            self.W   = self.W - self.dW
-            self.dW  = 1/2.0 * self.dW
-        else :
-            self.dW = (1 / self.num_back) * gradient(self.Y, self.W, sqrtYtYInv)
+    def local_step(self) :
+        _, _, K = self.X.shape
         
-        self.W += self.dW
         self.Y, YtY = compute_Y(self.X, self.W)
         w_value = sum([log(abs(det(self.W[:,:,k]))) for k in range(K)])
         return YtY, w_value
     
+    def local_step2(self, sqrtYtYInv, backtrack) :
+        if backtrack :
+            self.num_back += 1
+            self.W -= self.dW
+            self.dW = 1/2.0 * self.dW
+        else :
+            self.dW = (1 / self.num_back) * gradient(self.Y, self.W, sqrtYtYInv)
+        
+        self.W += self.dW
+        
     def initiate(self, n_components, W=[]) :
         self.X, wht, de_wht = whiten(self.X, n_components)
-        N, T, K = self.X.shape
+        N, R, K = self.X.shape
         if W == [] :
             self.W = rand(N,N,K)
         else :
             self.W = W
         
         self.Y, YtY = compute_Y(self.X, self.W)
-        return YtY, K, wht, de_wht
+        return N, R, K, wht, de_wht
     
     def finish(self) :
         return self.W

@@ -17,16 +17,23 @@ def terminate(cost, it, verbose) :
             print "Step %d \t Cost %f \t W Change %f" % (it, cost[it], term)
         return term
 
+def backtracking(cost, it) :
+    if it > 1 :
+       if cost[it] < min(cost[0:it]) :
+            return False
+       else :
+            return True
+    else :
+       return False
+
 class master_node() :
     '''
     N = number of components
     T = number of samples
     KK = a list of number of subjects at every local_node
     '''
-    def initiate(self, YtY, KK) :
+    def initiate(self, KK) :
         self.KK = KK
-        sqrtYtYInv = 1 / sqrt(YtY)
-        return sqrtYtYInv
     
     def master_step(self, YtY, w_value, cost, it, verbose) :
         '''
@@ -39,4 +46,6 @@ class master_node() :
        
         cost[it] = master_cost(w_value, sqrtYtY, self.KK)
         term = terminate(cost, it, verbose)
-        return sqrtYtYInv, cost, term
+        backtrack = backtracking(cost, it)
+        
+        return sqrtYtYInv, backtrack, cost, term
