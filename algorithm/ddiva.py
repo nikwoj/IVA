@@ -1,6 +1,6 @@
 from numpy import NaN, zeros
-from local_node2 import local_node
-from master_node2 import master_node
+from local_node import local_node
+from master_node import master_node
 
 
 def ddiva(X, W, n_components=20, max_iter=2048, term_thresh=1e-6, verbose=False) :
