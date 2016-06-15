@@ -28,7 +28,7 @@ def whiten (X, n_components) :
     de_wht  = zeros((N, n_components, K))
     for k in range(K) :
         X_white[:,:,k], wht[:,:,k], de_wht = pca_whiten(X[:,:,k], n_components)
-    
+        
     return X_white, wht, de_wht
 
 
@@ -68,7 +68,6 @@ class local_node() :
         else :
             self.W = W
         
-        self.Y, YtY = compute_Y(self.X, self.W)
         return N, R, K, wht, de_wht
     
     def finish(self) :
