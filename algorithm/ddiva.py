@@ -3,7 +3,7 @@ from local_node import local_node
 from master_node import master_node
 
 
-def ddiva(X, W, n_components=20, max_iter=2048, term_thresh=1e-6, verbose=False) :
+def ddiva(X, W, n_components=0, max_iter=2048, term_thresh=1e-6, verbose=False) :
     '''
     X is a list of local_node objects
         ie X = local_sites
@@ -11,9 +11,10 @@ def ddiva(X, W, n_components=20, max_iter=2048, term_thresh=1e-6, verbose=False)
     '''
     
     master = master_node()
-    YtY, de_wht, Wht, KK = [], [], [], []
+    Wht, de_wht, KK = [], [], []
     cost = [NaN for it in range(max_iter)]
     p = 0
+    
     for site in X :
         stuff = site.initiate(n_components, W[p])
         N = stuff[0]
@@ -37,23 +38,8 @@ def ddiva(X, W, n_components=20, max_iter=2048, term_thresh=1e-6, verbose=False)
         
         sqrtYtYInv, backtrack, cost, term = master.master_step(YtY, w_value, cost, it, verbose)
         
-        
         for site in X :
             site.local_step2(sqrtYtYInv, backtrack)
-        
-        #if it > 1 :
-        #    if backtrack == True :
-        #        if cost[it] > base :
-        #            continue
-        #        else :
-        #            backtrack = False
-        #    elif backtrack == False :
-        #        if cost[it] > base :
-        #            backtrack = True
-        #        elif cost[it] <= base :
-        #            base = cost[it]
-        #else :
-        #    base = cost[it]
         
         if term < term_thresh :
             break
@@ -62,4 +48,8 @@ def ddiva(X, W, n_components=20, max_iter=2048, term_thresh=1e-6, verbose=False)
     for site in X :
         W.append(site.finish())
     
-    return W, Wht, [de_wht, cost] 
+    if ncomp == 0 :
+        return W, cost
+    
+    if ncomp > 0 :
+        return W, Wht, de_wht, cost
