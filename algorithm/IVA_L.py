@@ -208,10 +208,6 @@ def iva_l (X, W_init, term_threshold=1e-6, term_crit='ChangeInCost',
             
             ## End iteration
     
-    
-    return sqrtYtYInv, cost
-    
-    
     if iteration==max_iter :
         print ('''Algorithm may have not converged, reached max
                number of iterations ''')
@@ -221,7 +217,7 @@ def iva_l (X, W_init, term_threshold=1e-6, term_crit='ChangeInCost',
         print "Algorithim converged, end results are: "
         print " Step: %i \n W change: %f \n Cost %f \n\n" % (iteration, term_criterion, cost[iteration])
     if n_components > 0 :
-        return W, wht, [de_wht, cost]
+        return W, wht, de_wht, cost
     else :
         return W
 

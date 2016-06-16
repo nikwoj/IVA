@@ -1,10 +1,20 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from numpy import sum, zeros, sqrt, abs
+from numpy import sum, zeros, sqrt, abs, arange
 from scipy.io import loadmat
 
 from sys import argv
+
+'''
+ NOTE : To use, call with python in following manner: 
+
+   python make_corr_heatmap.py component_number data_to_use
+
+Data should be organized as a number of different mat files
+(one for each different subject) and be able to be called
+as loadmat(data1)['S']
+'''
 
 def plot_corr_comp(comp, subjects) :
     B = get_sum_squared_mat(comp, subjects)
@@ -12,11 +22,12 @@ def plot_corr_comp(comp, subjects) :
     
     fig, ax = plt.subplots()
     heatmap = plt.pcolor(B, cmap=plt.cm.hot)
-    ax.set_xticks(np.arange(B.shape[0])+0.5, minor=False)
-    ax.set_yticks(np.arange(B.shape[1])+0.5, minor=False)
+    ax.set_xticks(arange(0, B.shape[0], int(B.shape[0] / 3.0)), minor=False)
+    ax.set_yticks(arange(0, B.shape[1], int(B.shape[1] / 3.0)), minor=False)
     
     ax.invert_yaxis()
     ax.xaxis.tick_top()
+    ax.axis('tight')
     
     cbar = plt.colorbar(heatmap)
     

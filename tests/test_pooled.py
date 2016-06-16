@@ -2,7 +2,7 @@ from multiprocessing import Pool
 
 from numpy import dot, zeros, ceil, abs, arange
 from numpy.random import rand, seed
-from scipy.io import loadmat
+from scipy.io import loadmat, savemat
 from IVA_L import iva_l
 from joint_isi import joint_isi
 
@@ -19,12 +19,14 @@ def rem_index(k) :
     else : 
         return "%d" % k
 
-def save_isi(number, write, cost) :
-    fil = open("test_ieee_1_pooled_%i.txt"%number, "w")
+def save_stuff(number, write, W, Wht, de_wht, cost) :
+    fil = open("test_ieee_pooled_%i.txt"%number, "w")
     fil.write(write + "\n")
     for i in range(2048) : 
         fil.write(str(cost[i]) + "\n")
     fil.close()
+    
+    savemat("test_ieee_pooled_%i_matrices.mat", {"W":W,"Wht":Wht,"de_wht":de_wht)
 
 def algorithm(num_subj) :
     X, A = get_data(num_subj)
@@ -32,11 +34,11 @@ def algorithm(num_subj) :
     
     seed(0)
     W = rand(ncomp,ncomp,num_subj)
-    W, Wht, de_wht_cost = iva_l(X, W, n_components=ncomp)
+    W, Wht, de_wht, cost = iva_l(X, W, n_components=ncomp)
     cost = de_wht_cost[1]
     
     isi = joint_isi(W,A,Wht)
-    save_isi(num_subj, str((num_subj,isi)), cost)
+    save_isi(num_subj, str((num_subj,isi)), W, Wht, de_wht, cost)
     print (num_subj, isi)
     return num_subj, isi
 

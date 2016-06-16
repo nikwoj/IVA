@@ -1,14 +1,33 @@
 from multiprocessing import Pool
 
-from numpy import dot, zeros, ceil, abs, arange
+from numpy import dot, zeros, abs, arange, identity
 from numpy.random import rand, seed
-from scipy.io import loadmat
+from scipy.io import loadmat, savemat
 from local_node import local_node
 from ddiva import ddiva
 from joint_isi import joint_disi
 
 from sys import argv
 from time import sleep
+
+# : NOTE : To use, call with 3 numbers. num_threads num_start num_stop
+## num_servers : How many threads to have going at one time
+## num_start : How many subjects should we start with?
+## num_stop : How many subjects should we end with?
+## ## If num_servers < 2 then will do a single test, and num_start will be number
+## ## of subjects  to use.
+## num_start should be less than num_stop. Both should be even
+## All numbers should be integers
+##
+## Example call : python test1_d.py 20 4 180
+## 
+## Use 20 different threads, start with 4 subjects, end with 180 subjects
+##
+## Assumes data is in form 
+##
+##  A_IVA_caseNik_r001_subj(index).mat ['A']
+##  SCV_IVA_caseNik_r001_subj(index).mat ['S']
+
 
 def rem_index(k) :
     if k < 10 :
@@ -20,52 +39,69 @@ def rem_index(k) :
     else : 
         return "%d" % k
 
-def save_isi(number, write) :
-    fil = open("test_1_ieee_%i.txt"%number, "w")
-    fil.write(write)
-    fil.close()
-
-def algorithm(num_subj) :
-    X, A = get_data(num_subj)
-    X, A = mk_AX_data(X, A, num_subj/2)
+def algorithm1(num_subj, Verbose=False) :
+    X, A = get_data1(num_subj)
+    X, A = mk_AX_data1(X, A, num_subj/2)
     ncomp = 20
     
     seed(0)
-    W = [rand(ncomp,ncomp,num_subj/2), rand(ncomp,ncomp,num_subj/2)]
-    W, Wht, de_wht = ddiva(X, W, ncomp)
+    W = get_W1(num_subj/2.0, ncomp)
+    W, Wht, de_wht, cost = ddiva(X, W, ncomp, verbose=Verbose)
     
-    K = num_subj/2
+    
+    K = num_subj
     isi = joint_disi(W,A,Wht)
-    save_isi(num_subj/2, str((K,isi)))
+    save_stuff1(str(K), str((K,isi)), W, Wht, de_wht, cost)
     print (K, isi)
     return K, isi
 
-def get_data(up) :
+def save_stuff1(num, write, W, Wht, de_wht, cost) :
+    fil = open("test_1_ieee_" + num + ".txt", "w")
+    fil.write(write + "\n")
+    
+    for i in range(len(cost)) :
+        fil.write(str(cost[i]) + "\n")
+    fil.close()
+    
+    savemat("test_1_ieee_" + num + "_matrices.mat", {"W":W,"Wht":Wht,"de_wht":de_wht})
+
+def get_data1(up) :
     X = zeros((250, 32968,up))
     A = zeros((250,20,up))
     for k in range(1, up+1) :
         A[:,:,k-1] = loadmat("A_IVA_caseNik_r001_subj" + rem_index(k) + ".mat")['A']
-        X[:,:,k-1] = dot(A[:,:,k-1], loadmat("SCV_IVA_caseNik_r001_subj"+(rem_index(k)+".mat"))['S'])
+        X[:,:,k-1] = dot(A[:,:,k-1], loadmat("SCV_IVA_caseNik_r001_subj" + rem_index(k) + ".mat")['S'])
     return X, A
 
-def mk_AX_data(X, A, up) :
+def mk_AX_data1(X, A, up) :
     X_data = [local_node(X[:,:,0:up]), local_node(X[:,:,up:])]
     A_data = [A[:,:,0:up], A[:,:,up:]]
     return X_data, A_data
 
+def get_W1(subjs, ncomp) :
+     W = [zeros((ncomp, ncomp, subjs)), zeros((ncomp, ncomp, subjs))]
+     
+     for k in range(2) :
+         for kk in range(int(subjs)) :
+             W[k][:,:,kk] = identity(ncomp) #rand(ncomp, ncomp)
+     
+     return W
+
 if __name__=="__main__" :
-    if argv[1] == "leibnitz" :
-        PNUM = 20
-    elif argv[1] == "hooke" :
-        PNUM = 5
-    elif argv[1] == "mars" :
-        PNUM = 32
-    ncomp = 20
-    pool = Pool(PNUM)
+    if int(argv[1]) < 2 :
+        subjects = int(argv[2])
+        algorithm1(subjects, Verbose=True)
+    else :
+        PNUM = int(argv[1])
     
-    #B = [k for k in range(4, 130, 2) if k not in [4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,56,60]]
-    B = arange(4,180,2)
-    isi = pool.map(algorithm, B)
-    fil = open("test_1_ieee_all.txt", "w+")
-    fil.write(isi)
-    fil.close()
+        pool = Pool(PNUM)
+        
+        start = int(argv[2])
+        stop  = int(argv[3])
+        
+        #B = arange(start,stop,2)
+        B = [2**i for i in range(2, 11)]
+        isi = pool.map(algorithm1, B)
+        fil = open("test_1_ieee_all.txt", "w+")
+        fil.write(isi)
+        fil.close()

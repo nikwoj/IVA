@@ -30,7 +30,7 @@ def algorithm(num_subj) :
     X, A = get_data(num_subj)
     ncomp = 20
     W = rand(ncomp,ncomp,num_subj)
-    W, Wht, de_wht_cost = iva_l(X, W, n_components=ncomp, verbose=True)
+    W, Wht, de_wht, cost = iva_l(X, W, n_components=ncomp, verbose=True)
     cost = de_wht_cost[1]
     isi = joint_isi(W,A,Wht)
     save_isi(num_subj, str((num_subj,isi)), cost)

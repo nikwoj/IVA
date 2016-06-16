@@ -2,7 +2,7 @@ from multiprocessing import Pool
 
 from numpy import dot, zeros, ceil, abs
 from numpy.random import rand
-from scipy.io import loadmat
+from scipy.io import loadmat, savemat
 from local_node import local_node
 from ddiva import ddiva
 from joint_isi import joint_disi
@@ -20,22 +20,29 @@ def rem_index(k) :
     else : 
         return "%d" % k
 
-def save_isi(number, write) :
-    fil = open("test_ieee_single_%i.txt"%number, "w")
-    fil.write(write)
-    fil.close()
-
 def algorithm(num_subj) :
     X, A = get_data(num_subj)
     X, A = mk_AX_data(X, A, num_subj/2)
     ncomp = 20
-    W = [rand(ncomp,ncomp,num_subj/2), rand(ncomp,ncomp,num_subj/2)]
-    W, Wht, de_wht = ddiva(X, W, ncomp, verbose=True)
+    
+    W = get_W1(num_subj/2, ncomp)
+    W, Wht, de_wht, cost = ddiva(X, W, ncomp, verbose=True)
     K = num_subj/2
+    
     isi = joint_disi(W,A,Wht)
-    save_isi(num_subj/2, str((K,isi)))
+    save_stuff(num_subj/2, str((K,isi)), W, Wht, de_wht, cost)
     print (K, isi)
     return str((K, isi))
+
+def save_stuff(number, write, W, Wht, de_wht, cost) :
+    fil = open("test_ieee_single_%i.txt"%number, "w")
+    fil.write(write + "\n")
+    
+    for i in range(2048) :
+        fil.write(str(cost[i]) + "\n")
+    fil.close()
+    
+    savemat("test_1_ieee_single_%i_matrices.mat"%number, {"W":W, "Wht":Wht, "de_wht":de_wht})
 
 def get_data(up) :
     X = zeros((250, 32968,up))
@@ -49,6 +56,15 @@ def mk_AX_data(X, A, up) :
     X_data = [local_node(X[:,:,0:up]), local_node(X[:,:,up:])]
     A_data = [A[:,:,0:up], A[:,:,up:]]
     return X_data, A_data
+
+def get_W1(subjs, ncomp) :
+     W = [zeros((ncomp, ncomp, subjs)), zeros((ncomp, ncomp, subjs))]
+     
+     for k in range(2) :
+         for kk in range(int(subjs)) :
+             W[k][:,:,kk] = rand(ncomp, ncomp)
+     
+     return W
 
 if __name__=="__main__" :
     num = int(argv[1])
