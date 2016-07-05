@@ -18,9 +18,10 @@ Data should be organized as a number of different mat files
 as loadmat(data1)['S']
 '''
 
-def plot_corr_comp(comp, num_subj) :
-    B = get_sum_squared_mat(comp, num_subj)
+def plot_corr_comp(comp, subjects) :
+    B = get_sum_squared_mat(comp, subjects)
     B = abs(get_corr_comp_mat(B))
+    
     fig, ax = plt.subplots()
     heatmap = plt.pcolor(B, cmap=plt.cm.hot)
     ax.set_xticks(arange(0, B.shape[0], int(B.shape[0] / 3.0)), minor=False)
@@ -49,21 +50,21 @@ def get_corr_comp_mat(B) :
     return R
 
 
-def get_sum_squared_mat(comp, num_subj) :
-    K = num_subj
+def get_sum_squared_mat(comp, subjects) :
+    K = len(subjects)
     B = zeros((K,K))
     
     for k in range(K) :
         #X1 = loadmat(subjects[k])['S'][comp,:]
-        X1 = get_S_data([k+1])[comp,:]
+        X1 = get_S_data(k)[comp,:]
         X1 -= X1.mean()
         B[k,k] = sum((X1)**2)
         
-        for kk in range(k, K) :
+        for kk in range(k+1, K) :
             #X2 = loadmat(subjects[kk])['S'][comp-1,:]
-            X2 = get_S_data([kk+1])[comp,:]
+            X2 = get_S_data(k)[comp,:]
             X2 -= X2.mean()
-            B[k,kk] = sum(X1 * X2)
+            B[k,kk] = sum(X1*X2)
             
             B[kk,k] = B[k,kk]
     
@@ -73,5 +74,4 @@ def get_sum_squared_mat(comp, num_subj) :
 if __name__ == "__main__" :
     argv.pop(0)
     comp = int(argv.pop(0))
-    num_subj = int(argv.pop(0))
-    plot_corr_comp(comp, num_subj)
+    plot_corr_comp(comp, argv)

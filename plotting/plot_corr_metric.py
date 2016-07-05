@@ -1,10 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
 from numpy import sum, abs
 
 from make_corr_heatmap import get_sum_squared_mat, get_corr_comp_mat
 from sys import argv
+
 def make_metric_plot(comp, subjects) :
     B = get_sum_squared_mat(comp, subjects)
     B = get_corr_comp_mat(B)
