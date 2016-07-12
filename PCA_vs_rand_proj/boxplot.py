@@ -35,6 +35,7 @@ wds = 0.8
 fliersz = 2
 lwd = 1
 
+plt.figure()
 ax = sb.boxplot(x="subj", y="errors", hue="method",
                     hue_order=['PCA IVAG IVAL','PCA IVAL','RP IVAG IVAL','RP IVAL'],
                     data=d,
@@ -42,3 +43,4 @@ ax = sb.boxplot(x="subj", y="errors", hue="method",
                     linewidth=lwd,
                     width=wds,
                     fliersize=fliersz)
+plt.show()
