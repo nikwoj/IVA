@@ -1,8 +1,9 @@
 import numpy as np
-from numpy import dot, log, zeros, transpose, sum
+from numpy import dot, log, zeros, transpose, sum, diag
 from numpy.random import rand
 from numpy.linalg import det, qr
 from ica import pca_whiten
+
 
 class local_node() :
     '''
@@ -14,7 +15,8 @@ class local_node() :
     def __init__(self, X, W) :
         self.X = X
         self.W = W
-        self.num_back = 10.0
+        #self.num_back = 10.0
+        self.alpha = 1.0
     
     def avg_data(self) :
         _,_,K = self.X.shape
@@ -42,26 +44,30 @@ class local_node() :
     
     def local_step(self) :
         N, _, K = self.X.shape
-        
         self.Y, YtY = compute_Y(self.X, self.W)
-        # Numerically unstable. Replaced with fix
-        #w_value = sum([log(abs(det(self.W[:,:,k]))) for k in range(K)])
         w_value = 0
-        for i in range(K) :
-            Q, R = qr(W[:,:,k])
+        for k in range(K) :
+            Q, R = qr(self.W[:,:,k])
             R = diag(R)
-	    w_value += sum(log(abs(R)))
+            w_value += sum(log(abs(R)))
         return YtY, w_value
     
     def local_step2(self, sqrtYtYInv, backtrack) :
         if backtrack :
-            self.num_back += 1
-            self.W -= self.dW
-            self.dW = 1/2.0 * self.dW
+            #self.num_back += 1
+            #self.W -= self.dW
+            #self.dW = 1/2.0 * self.dW
+            W = self.W_old.copy()
+            self.alpha *= 1/2.0
+            print self.alpha
         else :
-            self.dW = (1 / self.num_back) * gradient(self.Y, self.W, sqrtYtYInv)
+            #self.dW = (1 / self.num_back) * gradient(self.Y, self.W, sqrtYtYInv)
+            self.dW = gradient(self.Y, self.W, sqrtYtYInv)
+            self.W_old = self.W.copy()
+            self.W += self.dW
+            self.alpha = 1.0
         
-        self.W += self.dW
+        self.W += self.alpha * self.dW
     
     def finish(self) :
         return self.W
@@ -71,6 +77,11 @@ def compute_Y(X, W) :
     Y = X.copy()
     for k in range(K) :
         Y[:,:,k] = dot(W[:,:,k], X[:,:,k])
+    #pool = Pool(10)
+    ### NOTE: Threading
+    #Y_list = pool.map(get_Y, [[X[:,:,k], W[:,:,k]] for k in range(K)])
+    #for k in range(K) :
+    #    Y[:,:,k] = Y_list[k][:,:]
     YtY = sum(Y*Y, 2)
     return Y, YtY
 

@@ -11,10 +11,11 @@ from import_SCV_data import get_X_data
 
 def main (subjs, set_seed) :
     seed(0)
-    proj = zeros((20,250))
-    permute = permutation(250)[:20]
-    for n in range(20) :
-        proj[n,permute[n]] = 1
+    proj = rand(20,250)
+    #proj = zeros((20,250))
+    #permute = permutation(250)[:20]
+    #for n in range(20) :
+    #    proj[n,permute[n]] = 1
     
     list_subjs = range(1, subjs+1)
     X = get_X_data(list_subjs)

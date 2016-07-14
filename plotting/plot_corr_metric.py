@@ -1,60 +1,58 @@
-import numpy as np
 import matplotlib.pyplot as plt
-from numpy import sum, abs
+from numpy import abs, sum
+from numpy.linalg import det
+from sys import argv
+from multiprocessing import Pool
+from scipy.io import savemat
+
 
 from make_corr_heatmap import get_sum_squared_mat, get_corr_comp_mat
-from sys import argv
 
-def make_metric_plot(comp, subjects) :
-    B = get_sum_squared_mat(comp, subjects)
-    B = get_corr_comp_mat(B)
+def main () :
+    comp = range(20)
     
-    x2,   y2   = subj_site2(B)
-    x10,  y10  = subj_site10(B)
-    x100, y100 = subj_site100(B)
+    pool = Pool(20)
+    
+    pool.map(algorithm, comp)
+
+def algorithm (comp) :
+    data = []
+    for i in range(1, 8) :
+        corr = get_sum_squared_mat(comp, 2**i)
+        corr = get_corr_comp_mat(corr)
+        savemat("correlation_mat_comp%s_subj%s.mat"%(index2(comp), index4(2**i)), {'corr':corr})
+        #metric_val = l1_metric(corr)
+        metric_val = det(corr)
+        print "num_subj: %d comp: %d metric_val: %d"%(i, metric_val)
+        data.append( (i, metric_val) )
+        
+    fil = open("correlation_metric_comp" + index2(n) + ".png")
+    
+    for i in range(10) :
+        fil.write(str(data[i][1]) + "\n")
+    fil.close()
+    
+    plt.xlabel("Log2(Subjects)")
+    plt.ylabel("Log(ISI)")
     plt.semilogx()
-    plt.plot(x2,   y2)
-    plt.plot(x10,  y10)
-    plt.plot(x100, y100)
+    plt.semilogy()
+    plt.plot(data)
     plt.show()
-    plt.savefig("correlation_" + str(comp) + "_metric.png")   
+    plt.savefig("correlation_metric_comp" + index2(n) + ".png")
 
-def l1_norm(A) :
-    ## HOW THE FUCK DOES NUMPY NOT HAVE THIS!
-    ## ||A||_1 = \sum_{i,j} |a_{i,j}|
-    return sum(abs(A))
+def l1_metric (A) :
+    N, N = A.shape
+    return sum(abs(A)) / (N*N)
 
-def l1_metric(A) : 
-    ## Provides metric for how correlated a correlation
-    ## matrix is. Returns number 0<num<1
-    N,_ = A.shape
-    return l1_norm(A) / N**2
+def index4 (n) :
+    if n < 10 : return "000" + str(n)
+    if n < 100 : return "00" + str(n)
+    if n < 1000 : return "0" + str(n)
+    else : return str(n)
 
-def subj_site2(B) :
-    y2 = []
-    x2 = []
-    for i in range(1, 10) :
-        y2.append(l1_metric(B[0:2**i, 0:2**i]))
-        x2.append(2**i)
-    return x2, y2
+def index2 (n) :
+    if n < 10 : return "0" + str(n)
+    else : return str(n)
 
-def subj_site10(B) :
-    y10 = []
-    x10 = []
-    for i in range(1, 7) :
-        y10.append(l1_metric(B[0:10**i, 0:10**i]))
-        x10.append(10**i)
-    return x10, y10
-
-def subj_site100(B) :
-    y100 = []
-    x100 = []
-    for i in range(1, 4) :
-        y100.append(l1_metric(B[0:100**i, 0:100**i]))
-        x100.append(100**i)
-    return x100, y100
-
-if __name__=="__main__" :
-    argv.pop(0)
-    comp = int(argv.pop(0))
-    make_metric_plot(comp, argv)
+if __name__ == "__main__" :
+    main()

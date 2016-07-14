@@ -6,9 +6,14 @@ def joint_disi(W, A, Wht) :
     N = W[0].shape[0]
     KK = [W[p].shape[2] for p in range(P)]
     B = zeros((N,N))
-    for p in range(P) :
-        for k in range(KK[p]) :
-            B += abs(dot(W[p][:,:,k], dot(Wht[p][:,:,k], A[p][:,:,k])))
+    try :
+        for p in range(P) :
+            for k in range(KK[p]) :
+                B += abs(dot(W[p][:,:,k], dot(Wht[p][:,:,k], A[p][:,:,k])))
+    except IndexError :
+        for p in range(P) :
+            for k in range(KK[p]) :
+                B += abs(dot(W[p][:,:,k], dot(Wht, A[p][:,:,k])))
     
     row_sum = 0
     col_sum = 0
@@ -29,8 +34,16 @@ def joint_isi(W, A, Wht=[]) :
         for k in range(K) :
             Wht[:,:,k] = identity(N)
     B = zeros((N,N))
-    for k in range(K) :
-        B += abs(dot(W[:,:,k], dot(Wht[:,:,k], A[:,:,k])))
+    
+    try :
+        # If different wht for every subject
+        for k in range(K) :
+            B += abs(dot(W[:,:,k], dot(Wht[:,:,k], A[:,:,k])))
+    
+    except IndexError :
+        # For same wht for every subject
+        for k in range(K) :
+            B += abs(dot(W[:,:,k], dot(Wht, A[:,:,k])))
 
     row_sum = 0
     col_sum = 0

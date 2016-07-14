@@ -16,7 +16,7 @@ W = A.W;
 %    W(:,:,kk) = eye(20);
 %end
 
-W = icatb_iva_second_order(X,'verbose',true,'whiten',false);
+W = icatb_iva_second_order(X,'verbose',true,'whiten',false,'W_init',W);
 save(sprintf('W_IVAG_pooled_su%d_start%d.mat',subjs,seed), 'W');
 
 

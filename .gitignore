@@ -9,3 +9,8 @@ test3/
 data/
 SCV_*
 A_IVA*
+*txt
+*mat
+*png
+*testing*
+PCA_vs_rand_proj/
