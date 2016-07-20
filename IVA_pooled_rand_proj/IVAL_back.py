@@ -3,41 +3,6 @@ from numpy import dot, zeros
 from numpy.linalg import norm
 from ica import pca_whiten
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def iva_l (X, W, term_threshold=1e-6, term_crit='ChangeInW',
            max_iter=2048, A = [], verbose=False, n_components=0) :
     
@@ -119,17 +84,6 @@ def iva_l (X, W, term_threshold=1e-6, term_crit='ChangeInW',
     else :
         return W, cost[:it]
 
-class PARAM() :
-    def __init__(self, rho=0.5, term_crit="ChangeInW", verbose=True) :
-        self.rho = rho
-        self.backtrack = False
-        self.alpha = 1.0
-        self.cost = []
-        self.term_criterion = 0.0
-        self.term_crit = term_crit
-        self.verbose = verbose
-
-
 def get_alpha(it, alpha, old_norm, dW_norm) : 
     if it > 0 : return alpha * old_norm / dW_norm
     else : return 1.0
@@ -161,7 +115,7 @@ def compute_cost (W, sqrtYtY) :
         current_cost += np.sum(np.log(np.abs(L)))
     
     current_cost = (-1)*current_cost + np.sum(sqrtYtY) / R
-    current_cost = current_cost / (N*K)
+    #current_cost = current_cost / (N*K)
     
     return current_cost
 

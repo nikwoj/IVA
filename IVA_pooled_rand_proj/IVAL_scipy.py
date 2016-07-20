@@ -1,57 +1,48 @@
 from scipy.optimize import minimize
 import numpy as np
 
-def iva_l (X, W, verbose) :
-    N,N,K = W.shape
-    W = W.reshape(N*N*K)
-    cost_grad = cost_grad_wrapper(X)
-    
-    results = minimize(cost_grad, W, method="CG", jac=True,
-                       options={'disp':verbose})
-    
-    if results['success'] == False : 
-        if verbose : print "Did not converge"
-    
-    W = results['x'].reshape(N,N,K)
-    return W
+def get_sqrtYtY(W, X):
+    Y = X*0
+    for k in range(X.shape[-1]):
+        Y[:,:,k] = np.dot(W[:,:,k], X[:,:,k])
+    sqrtYtY = np.sqrt(np.sum(Y*Y, 2))
+    return Y, sqrtYtY
 
-def cost_grad_wrapper (X) :
+def grad(W, sqrtYtY, Y, R):
+    N,_,K = W.shape
+    gW = W*0
+    sqrtYtY = 1 / sqrtYtY
+    for k in range(K):
+        phi = sqrtYtY * Y[:,:,k]
+        gW[:,:,k] = W[:,:,k] - np.dot(np.dot(phi, Y[:,:,k].T / R), W[:,:,k])
+    return -1 * gW
+
+def cost(W, sqrtYtY, R):
+    N,_,K = W.shape
+    c = np.sum(sqrtYtY)/R
+    for k in range(K):
+        c -= np.linalg.slogdet(W[:,:,k])[1]
+    #c /= N*K
+    return c
+
+def cost_grad(W, X):
     N,R,K = X.shape
-    Y=X*0
-    dW=np.zeros((N,N,K))
-    
-    def cost_grad(W) :
-        W = W.reshape(N,N,K)
-        Y, sqrtYtY = get_sqrtYtY(X, W)
-        grad = get_grad(Y, sqrtYtY, W)
-        grad = grad.reshape(N*N*K)
-        cost = get_cost(sqrtYtY, W)
-        return cost, grad
+    W = W.reshape(N,N,K)
+    Y, sqrtYtY = get_sqrtYtY(W, X)
+    gW = grad(W, sqrtYtY, Y, R).flatten()
+    c = cost(W, sqrtYtY, R)
+    return c, gW
 
-    def get_sqrtYtY(X, W) :
-        _,_,K = X.shape
-        for k in range(K) :
-            Y[:,:,k] = np.dot(W[:,:,k], X[:,:,k])
-        sqrtYtY = np.sqrt(np.sum(Y*Y, 2))
-        return Y, sqrtYtY
-    
-    def get_grad(Y, sqrtYtY, W) :
-        sqrtYtY = 1 / sqrtYtY
-        for k in range(K) :
-            phi = sqrtYtY * Y[:,:,k]
-            dW[:,:,k] = W[:,:,k] - np.dot(np.dot(phi, Y[:,:,k].T / R), W[:,:,k])
-        print "Gradient norm : ", np.max([np.linalg.norm(dW[:,:,k], 2) for k in range(K)])
-        return -1 * dW
-    
-    def get_cost(sqrtYtY, W) :
-        cost = np.sum(sqrtYtY)/R
-        for k in range(K) :
-            Q,L = np.linalg.qr(W[:,:,k])
-            L = np.diag(L)
-            cost -= np.sum(np.log(np.abs(L)))
-        
-        cost /= (N*K)
-        print "Cost function : ", cost
-        return cost
-        
-    return cost_grad
+def iva_l (X, W, verbose=True, term_threshold=1e-8):
+    Wshape = W.shape
+    results = minimize(cost_grad, W.flatten(), args=(X,), method="CG",
+                           jac=True, options={'disp':verbose})
+
+    if verbose:
+        if results['success'] == False :
+            print "Did not converge"
+
+    W = results['x'].reshape(Wshape)
+    print W.shape
+    c = results['fun']
+    return W
