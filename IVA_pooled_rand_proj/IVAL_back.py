@@ -4,7 +4,7 @@ from numpy.linalg import norm
 from ica import pca_whiten
 
 def iva_l (X, W, term_threshold=1e-6, term_crit='ChangeInW',
-           max_iter=2048, A = [], verbose=False, n_components=0) :
+           max_iter=10000, A = [], verbose=False, n_components=0) :
     
     cost = [np.NaN for x in range(max_iter)]
     if n_components > 0 :
@@ -85,7 +85,11 @@ def iva_l (X, W, term_threshold=1e-6, term_crit='ChangeInW',
         return W, cost[:it]
 
 def get_alpha(it, alpha, old_norm, dW_norm) : 
-    if it > 0 : return alpha * old_norm / dW_norm
+    if it > 0 : 
+        if it % 100 == 0 :
+            return 1.0
+        else :
+            return alpha * old_norm / dW_norm
     else : return 1.0
 
 def grad_norm(dW) : 
@@ -97,7 +101,6 @@ def grad_norm(dW) :
 def get_dW (W, Y, sqrtYtYInv) :
     _, R, K = Y.shape
     dW = W.copy()
-    
     for k in range(K) :
         phi = sqrtYtYInv * Y[:,:,k]
         dW[:,:,k] = W[:,:,k] - np.dot( np.dot(phi, np.transpose(Y[:,:,k]) / R), W[:,:,k])
