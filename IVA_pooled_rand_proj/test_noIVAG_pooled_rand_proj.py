@@ -1,5 +1,5 @@
 #from IVAL_back import iva_l
-from IVA_L import iva_l
+from IVAL_backtrack import iva_l
 from joint_isi import joint_isi
 from import_SCV_data import get_A_data, get_wht_data
 
